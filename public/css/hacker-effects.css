@@ -1,0 +1,85 @@
+/* Efek cyber untuk website */
+.cyber-title {
+    position: relative;
+    display: inline-block;
+    transition: text-shadow 0.1s ease;
+}
+
+.cyber-title::after {
+    content: attr(data-text);
+    position: absolute;
+    left: 2px;
+    text-shadow: -1px 0 #2563eb;
+    top: 0;
+    color: transparent;
+    background: transparent;
+    overflow: hidden;
+    animation: noise-anim 3s infinite linear alternate-reverse;
+}
+
+.cyber-text {
+    display: inline-block;
+    opacity: 0;
+    animation: fadeIn 0.5s forwards;
+    animation-delay: 0.5s;
+}
+
+.hero-section {
+    position: relative;
+    background: linear-gradient(to bottom, #000819, #001233);
+    min-height: 60vh;
+    overflow: hidden;
+}
+
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        linear-gradient(90deg, rgba(79, 70, 229, 0.1) 1px, transparent 1px),
+        linear-gradient(rgba(79, 70, 229, 0.1) 1px, transparent 1px);
+    background-size: 30px 30px;
+    animation: moveGrid 20s linear infinite;
+}
+
+@keyframes moveGrid {
+    0% {
+        transform: translate(0, 0);
+    }
+    100% {
+        transform: translate(30px, 30px);
+    }
+}
+
+@keyframes noise-anim {
+    0% {
+        clip-path: inset(40% 0 61% 0);
+    }
+    20% {
+        clip-path: inset(92% 0 1% 0);
+    }
+    40% {
+        clip-path: inset(43% 0 1% 0);
+    }
+    60% {
+        clip-path: inset(25% 0 58% 0);
+    }
+    80% {
+        clip-path: inset(54% 0 7% 0);
+    }
+    100% {
+        clip-path: inset(58% 0 43% 0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
