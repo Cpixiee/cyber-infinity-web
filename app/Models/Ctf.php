@@ -110,6 +110,7 @@ class Ctf extends Model
             ->join('ctf_submissions', 'users.id', '=', 'ctf_submissions.user_id')
             ->where('ctf_submissions.ctf_id', $this->id)
             ->where('ctf_submissions.status', 'correct')
+            ->whereNotNull('users.id')
             ->groupBy('users.id')
             ->orderByDesc('total_points')
             ->orderBy('first_solve_time')

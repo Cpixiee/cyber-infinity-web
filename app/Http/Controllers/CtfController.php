@@ -135,8 +135,11 @@ class CtfController extends Controller
 
         $chartData = [];
         
-        foreach ($topUsers as $userData) {
-            $user = $userData['user'];
+        foreach ($topUsers as $user) {
+            // Check if user object exists and has valid data
+            if (!$user || !$user->id) {
+                continue;
+            }
             
             // Get user's solve progression for this specific CTF
             $submissions = CtfSubmission::where('user_id', $user->id)

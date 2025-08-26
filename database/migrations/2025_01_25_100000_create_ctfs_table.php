@@ -16,8 +16,8 @@ return new class extends Migration
             $table->string('name'); // Nama CTF Event
             $table->text('description'); // Deskripsi CTF
             $table->string('banner_image')->nullable(); // Banner image untuk CTF
-            $table->timestamp('start_time'); // Waktu mulai CTF
-            $table->timestamp('end_time'); // Waktu berakhir CTF
+            $table->timestamp('start_time')->nullable(); // Waktu mulai CTF
+            $table->timestamp('end_time')->nullable(); // Waktu berakhir CTF
             $table->enum('status', ['draft', 'active', 'inactive', 'ended'])->default('draft');
             $table->json('rules')->nullable(); // Rules/peraturan CTF dalam format JSON
             $table->integer('max_participants')->nullable(); // Maksimal peserta (null = unlimited)
