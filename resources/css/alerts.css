@@ -1,0 +1,254 @@
+/* Cyber Alert Styles */
+.cyber-toast-success {
+    border-left: 4px solid #10b981 !important;
+    box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.1), 0 2px 4px -1px rgba(16, 185, 129, 0.06) !important;
+}
+
+.cyber-toast-error {
+    border-left: 4px solid #ef4444 !important;
+    box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.1), 0 2px 4px -1px rgba(239, 68, 68, 0.06) !important;
+}
+
+.cyber-toast-warning {
+    border-left: 4px solid #f59e0b !important;
+    box-shadow: 0 4px 6px -1px rgba(245, 158, 11, 0.1), 0 2px 4px -1px rgba(245, 158, 11, 0.06) !important;
+}
+
+.cyber-toast-info {
+    border-left: 4px solid #3b82f6 !important;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.1), 0 2px 4px -1px rgba(59, 130, 246, 0.06) !important;
+}
+
+.cyber-modal {
+    border: 1px solid #374151 !important;
+    backdrop-filter: blur(8px) !important;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25) !important;
+}
+
+.cyber-btn-confirm {
+    background: linear-gradient(135deg, #10b981, #059669) !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.cyber-btn-confirm:hover {
+    background: linear-gradient(135deg, #059669, #047857) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3) !important;
+}
+
+.cyber-btn-cancel {
+    background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    transition: all 0.2s ease !important;
+}
+
+.cyber-btn-cancel:hover {
+    background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 8px rgba(239, 68, 68, 0.3) !important;
+}
+
+.cyber-alert {
+    background: linear-gradient(135deg, #0f172a, #1e293b) !important;
+    border: 2px solid #00ff00 !important;
+    box-shadow: 
+        0 0 20px rgba(0, 255, 0, 0.3),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    backdrop-filter: blur(10px) !important;
+}
+
+.cyber-alert-title {
+    color: #00ff00 !important;
+    font-family: 'Courier New', monospace !important;
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.5) !important;
+    font-weight: bold !important;
+}
+
+.cyber-alert-content {
+    color: #00ff00 !important;
+    font-family: 'Courier New', monospace !important;
+    text-align: left !important;
+    padding: 10px 0 !important;
+}
+
+.cyber-alert-btn {
+    background: linear-gradient(135deg, #00ff00, #00cc00) !important;
+    color: #000 !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 4px !important;
+    font-weight: bold !important;
+    font-family: 'Courier New', monospace !important;
+    transition: all 0.2s ease !important;
+}
+
+.cyber-alert-btn:hover {
+    background: linear-gradient(135deg, #00cc00, #00aa00) !important;
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.5) !important;
+    transform: translateY(-1px) !important;
+}
+
+.cyber-validation-error {
+    border-left: 4px solid #ef4444 !important;
+}
+
+/* Form field error states */
+.field-error {
+    border-color: #ef4444 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+    animation: shake 0.5s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* Loading spinner customization */
+.swal2-loader {
+    border-color: #00ff00 transparent #00ff00 transparent !important;
+}
+
+/* Cyber theme for specific alerts */
+.cyber-title {
+    font-family: 'Courier New', monospace;
+    text-shadow: 0 0 10px currentColor;
+}
+
+.cyber-text {
+    font-family: 'Courier New', monospace;
+    line-height: 1.6;
+}
+
+/* Glitch effect for critical errors */
+@keyframes glitch {
+    0% { transform: translate(0); }
+    20% { transform: translate(-2px, 2px); }
+    40% { transform: translate(-2px, -2px); }
+    60% { transform: translate(2px, 2px); }
+    80% { transform: translate(2px, -2px); }
+    100% { transform: translate(0); }
+}
+
+.glitch-alert {
+    animation: glitch 0.3s infinite;
+}
+
+/* Matrix rain effect for loading */
+.matrix-loading {
+    background: linear-gradient(
+        180deg,
+        transparent 0%,
+        rgba(0, 255, 0, 0.1) 50%,
+        transparent 100%
+    );
+    background-size: 100% 20px;
+    animation: matrix-rain 1s linear infinite;
+}
+
+@keyframes matrix-rain {
+    0% { background-position: 0 -20px; }
+    100% { background-position: 0 0; }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .swal2-popup {
+        margin: 0 10px !important;
+        max-width: calc(100% - 20px) !important;
+    }
+    
+    .cyber-alert-content {
+        font-size: 14px !important;
+    }
+}
+
+/* Dark theme compatibility */
+@media (prefers-color-scheme: dark) {
+    .swal2-popup {
+        background: #1f2937 !important;
+        color: #fff !important;
+    }
+}
+
+/* Animation for toast entrance */
+.swal2-toast.swal2-show {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Progress bar styling */
+.swal2-timer-progress-bar {
+    background: linear-gradient(90deg, #00ff00, #00cc00) !important;
+}
+
+/* Custom checkbox and radio styles for forms */
+.cyber-checkbox {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #00ff00;
+    border-radius: 3px;
+    background: transparent;
+    position: relative;
+    cursor: pointer;
+}
+
+.cyber-checkbox:checked {
+    background: #00ff00;
+}
+
+.cyber-checkbox:checked::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #000;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Success pulse effect */
+.success-pulse {
+    animation: successPulse 0.6s ease-out;
+}
+
+@keyframes successPulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+    }
+    70% {
+        transform: scale(1.05);
+        box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+    }
+}
+
+
+
+
+
+

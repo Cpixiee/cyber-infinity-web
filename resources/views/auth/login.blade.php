@@ -13,42 +13,28 @@
         <h2 class="terminal-text">Login ke Cyber Infinity</h2>
         <p class="terminal-text">>> Initializing secure connection...</p>
 
-        <form class="mt-8 space-y-6" action="{{ route('login') }}" method="POST">
+        <form id="loginForm" class="mt-8 space-y-6" action="{{ route('login') }}" method="POST" onsubmit="return handleLoginSubmit(event)">
             @csrf
 
             <div class="rounded-md shadow-sm -space-y-px">
                 <div>
                     <label for="email" class="sr-only">Email</label>
                     <input id="email" name="email" type="email" autocomplete="email" required
-                        class="w-full px-3 py-2 border placeholder-gray-500 text-gray-100 bg-gray-800/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
-                        placeholder="Email">
+                        class="w-full px-3 py-2 border placeholder-gray-500 text-gray-100 bg-gray-800/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm transition-all duration-200"
+                        placeholder="Email" value="{{ old('email') }}">
                 </div>
                 <div>
                     <label for="password" class="sr-only">Password</label>
                     <input id="password" name="password" type="password" autocomplete="current-password" required
-                        class="w-full px-3 py-2 border placeholder-gray-500 text-gray-100 bg-gray-800/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm"
+                        class="w-full px-3 py-2 border placeholder-gray-500 text-gray-100 bg-gray-800/50 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 sm:text-sm transition-all duration-200"
                         placeholder="Password">
                 </div>
             </div>
 
-            <!-- Error Messages -->
-            @if ($errors->any())
-                <div class="rounded-md bg-red-500/10 p-4 mt-4">
-                    <div class="flex">
-                        <div class="text-sm text-red-400">
-                            <ul class="list-disc pl-5 space-y-1">
-                                @foreach ($errors->all() as $error)
-                                    <li>{{ $error }}</li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            @endif
-
             <div>
-                <button type="submit" class="cyber-button">
-                    Login
+                <button type="submit" class="cyber-button" id="loginBtn">
+                    <span id="loginBtnText">Login</span>
+                    <i id="loginSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
                 </button>
             </div>
         </form>
@@ -63,4 +49,40 @@
         </div>
     </div>
 </div>
+
+<script>
+// Handle login form submission
+function handleLoginSubmit(event) {
+    event.preventDefault();
+    
+    // Show loading state
+    setButtonLoading('loginBtn', true, 'Logging in...');
+    
+    // Validate form
+    if (!validateFormFields('loginForm')) {
+        setButtonLoading('loginBtn', false);
+        document.getElementById('loginBtnText').textContent = 'Login';
+        return false;
+    }
+    
+    // Submit form
+    document.getElementById('loginForm').submit();
+    return true;
+}
+
+// Show flash messages
+document.addEventListener('DOMContentLoaded', function() {
+    @if(session('success'))
+        showSuccessToast("{{ session('success') }}");
+    @endif
+
+    @if(session('error'))
+        showErrorToast("{{ session('error') }}");
+    @endif
+
+    @if($errors->any())
+        showValidationErrors(@json($errors->all()));
+    @endif
+});
+</script>
 @endsection

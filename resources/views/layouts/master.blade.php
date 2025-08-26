@@ -7,6 +7,10 @@
 
     <title>@yield('title', 'Cyber Infinity')</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
+    
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
@@ -267,6 +271,8 @@
     </div>
 
     <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('js/cyber-alerts.js') }}"></script>
     <script src="{{ asset('js/core.js') }}"></script>
     <script src="{{ asset('js/hacker-effects.js') }}"></script>
     <script src="{{ asset('js/matrix-effect.js') }}"></script>

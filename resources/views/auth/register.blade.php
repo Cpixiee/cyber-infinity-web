@@ -24,7 +24,7 @@
                 </p>
             </div>
 
-            <form class="mt-8 space-y-6" action="{{ route('register') }}" method="POST">
+            <form id="registerForm" class="mt-8 space-y-6" action="{{ route('register') }}" method="POST" onsubmit="return handleRegisterSubmit(event)">
                 @csrf
                 
                 <div class="space-y-4">
@@ -97,26 +97,11 @@
                     </div>
                 </div>
 
-                <!-- Error Messages -->
-                @if ($errors->any())
-                    <div class="rounded-md bg-red-500/10 p-4">
-                        <div class="flex">
-                            <div class="text-sm text-red-400">
-                                <ul class="list-disc pl-5 space-y-1">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
                 <div>
-                    <button type="submit" class="cyber-button">
-                        Daftar
+                    <button type="submit" class="cyber-button" id="registerBtn">
+                        <span id="registerBtnText">Daftar</span>
+                        <i id="registerSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
                     </button>
-
                 </div>
             </form>
 
@@ -131,4 +116,239 @@
         </div>
     </div>
 </div>
+
+<script>
+// Handle register form submission
+function handleRegisterSubmit(event) {
+    event.preventDefault();
+    
+    // Show loading state
+    const btn = document.getElementById('registerBtn');
+    const btnText = document.getElementById('registerBtnText');
+    const spinner = document.getElementById('registerSpinner');
+    
+    btn.disabled = true;
+    btnText.textContent = 'Mendaftar...';
+    spinner.classList.remove('hidden');
+    
+    // Validate form
+    if (!validateRegisterForm()) {
+        // Reset button state
+        btn.disabled = false;
+        btnText.textContent = 'Daftar';
+        spinner.classList.add('hidden');
+        return false;
+    }
+    
+    // Submit form
+    document.getElementById('registerForm').submit();
+    return true;
+}
+
+// Email validation helper
+function isValidEmail(email) {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+}
+
+// Show validation errors using SweetAlert2
+function showValidationErrors(errors) {
+    let errorList = errors.map(error => `• ${error}`).join('<br>');
+    
+    Swal.fire({
+        title: 'Validation Error',
+        html: `<div class="text-left">${errorList}</div>`,
+        icon: 'error',
+        confirmButtonText: 'Perbaiki',
+        background: '#1f2937',
+        color: '#fff',
+        customClass: {
+            popup: 'cyber-validation-error'
+        }
+    });
+}
+
+// Custom validation for register form
+function validateRegisterForm() {
+    const form = document.getElementById('registerForm');
+    const errors = [];
+    
+    // Get form fields
+    const name = form.querySelector('input[name="name"]');
+    const email = form.querySelector('input[name="email"]');
+    const birthDay = form.querySelector('select[name="birth_day"]');
+    const birthMonth = form.querySelector('select[name="birth_month"]');
+    const birthYear = form.querySelector('select[name="birth_year"]');
+    const password = form.querySelector('input[name="password"]');
+    const passwordConfirm = form.querySelector('input[name="password_confirmation"]');
+    
+    // Reset field errors
+    [name, email, password, passwordConfirm].forEach(field => {
+        field.classList.remove('border-red-500');
+    });
+    
+    // Validate name
+    if (!name.value.trim()) {
+        errors.push('Nama lengkap harus diisi');
+        name.classList.add('border-red-500');
+    }
+    
+    // Validate email
+    if (!email.value.trim()) {
+        errors.push('Email harus diisi');
+        email.classList.add('border-red-500');
+    } else if (!isValidEmail(email.value)) {
+        errors.push('Format email tidak valid');
+        email.classList.add('border-red-500');
+    }
+    
+    // Validate birthdate
+    if (!birthDay.value || !birthMonth.value || !birthYear.value) {
+        errors.push('Tanggal lahir harus diisi lengkap');
+        [birthDay, birthMonth, birthYear].forEach(field => {
+            if (!field.value) field.classList.add('border-red-500');
+        });
+    }
+    
+    // Validate password
+    if (!password.value) {
+        errors.push('Password harus diisi');
+        password.classList.add('border-red-500');
+    } else if (password.value.length < 8) {
+        errors.push('Password minimal 8 karakter');
+        password.classList.add('border-red-500');
+    }
+    
+    // Validate password confirmation
+    if (!passwordConfirm.value) {
+        errors.push('Konfirmasi password harus diisi');
+        passwordConfirm.classList.add('border-red-500');
+    } else if (password.value !== passwordConfirm.value) {
+        errors.push('Konfirmasi password tidak cocok');
+        passwordConfirm.classList.add('border-red-500');
+    }
+    
+    if (errors.length > 0) {
+        showValidationErrors(errors);
+        return false;
+    }
+    
+    return true;
+}
+
+// Show flash messages
+function showFlashMessages() {
+    @if(session('success'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 4000,
+            timerProgressBar: true,
+            icon: 'success',
+            title: "{{ session('success') }}",
+            background: '#1f2937',
+            color: '#fff',
+            iconColor: '#10b981'
+        });
+    @endif
+
+    @if(session('error'))
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 6000,
+            timerProgressBar: true,
+            icon: 'error',
+            title: "{{ session('error') }}",
+            background: '#1f2937',
+            color: '#fff',
+            iconColor: '#ef4444'
+        });
+    @endif
+
+    @if($errors->any())
+        showValidationErrors(@json($errors->all()));
+    @endif
+}
+
+// Real-time field validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Show flash messages
+    showFlashMessages();
+    
+    const emailField = document.querySelector('input[name="email"]');
+    const passwordField = document.querySelector('input[name="password"]');
+    const passwordConfirmField = document.querySelector('input[name="password_confirmation"]');
+    
+    // Email validation
+    emailField.addEventListener('blur', function() {
+        if (this.value && !isValidEmail(this.value)) {
+            this.classList.add('border-red-500');
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                icon: 'warning',
+                title: 'Format email tidak valid',
+                background: '#1f2937',
+                color: '#fff',
+                iconColor: '#f59e0b'
+            });
+        } else {
+            this.classList.remove('border-red-500');
+        }
+    });
+    
+    // Password strength indicator
+    passwordField.addEventListener('input', function() {
+        const strength = getPasswordStrength(this.value);
+        if (this.value.length > 0 && this.value.length < 8) {
+            this.classList.add('border-red-500');
+        } else {
+            this.classList.remove('border-red-500');
+        }
+        
+        // Show strength indicator
+        if (this.value.length > 0) {
+            showPasswordStrength(strength);
+        }
+    });
+    
+    // Password confirmation validation
+    passwordConfirmField.addEventListener('input', function() {
+        if (this.value && passwordField.value !== this.value) {
+            this.classList.add('border-red-500');
+        } else {
+            this.classList.remove('border-red-500');
+        }
+    });
+    
+    // Clear errors on focus
+    document.querySelectorAll('input, select').forEach(field => {
+        field.addEventListener('focus', function() {
+            this.classList.remove('border-red-500');
+        });
+    });
+});
+
+function getPasswordStrength(password) {
+    let score = 0;
+    if (password.length >= 8) score++;
+    if (/[a-z]/.test(password)) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^A-Za-z0-9]/.test(password)) score++;
+    return score;
+}
+
+function showPasswordStrength(strength) {
+    const strengths = ['Sangat Lemah', 'Lemah', 'Sedang', 'Kuat', 'Sangat Kuat'];
+    const colors = ['#ef4444', '#f59e0b', '#eab308', '#22c55e', '#10b981'];
+    
+    // You can add a strength indicator UI here if needed
+}
+</script>
 @endsection

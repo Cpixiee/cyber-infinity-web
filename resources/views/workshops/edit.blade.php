@@ -6,6 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Edit Workshop - Cyber Infinity</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
+    
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -17,20 +21,60 @@
     
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Fix responsive issues -->
+    <style>
+        /* DESKTOP: Hide all mobile elements and show sidebar */
+        @media (min-width: 1024px) {
+            #mobile-menu-btn, 
+            #mobile-close-btn, 
+            #mobile-overlay {
+                display: none !important;
+            }
+            
+            #sidebar {
+                position: static !important;
+                transform: translateX(0) !important;
+                transition: none !important;
+            }
+        }
+        
+        /* MOBILE: Sidebar hidden by default */
+        @media (max-width: 1023px) {
+            #sidebar {
+                transform: translateX(-100%) !important;
+            }
+            
+            #sidebar.mobile-open {
+                transform: translateX(0) !important;
+            }
+        }
+    </style>
 
 </head>
 <body class="bg-white">
-    <!-- Dashboard Container -->
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="block lg:!hidden fixed top-4 left-4 z-[60] p-2 bg-white rounded-lg shadow-md border border-gray-200">
+        <i class="fas fa-bars text-gray-600"></i>
+    </button>
+
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="block lg:!hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
     <div class="flex min-h-screen bg-white">
         <!-- Sidebar -->
-        <aside class="w-64 bg-white shadow-sm border-r border-gray-200 fixed inset-y-0 left-0 z-50 lg:static lg:inset-0">
+        <aside id="sidebar" class="w-64 bg-white shadow-sm border-r border-gray-200 fixed inset-y-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 lg:!transform-none lg:!translate-x-0 lg:!static lg:!inset-0">
             <div class="flex flex-col h-full">
                 <!-- Logo -->
-                <div class="flex items-center px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center">
                         <img src="{{ asset('images/fih-logo.png') }}" alt="FIH Logo" class="w-8 h-8 rounded-lg">
                         <h1 class="ml-3 text-xl font-bold text-gray-900">Cyber Infinity</h1>
                     </div>
+                    <!-- Mobile Close Button -->
+                    <button id="mobile-close-btn" class="block lg:!hidden p-1 text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-lg"></i>
+                    </button>
                 </div>
 
                 <!-- Navigation -->
@@ -44,6 +88,30 @@
                         <i class="fas fa-graduation-cap w-5 h-5 mr-3"></i>
                         Workshop
                     </a>
+                    
+                    <!-- Challenges Dropdown -->
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                            <div class="flex items-center">
+                                <i class="fas fa-flag w-5 h-5 mr-3"></i>
+                                <span>Challenges</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        
+                        <div x-show="open" x-transition class="mt-1 ml-6 space-y-1">
+                            <a href="{{ route('challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                                <i class="fas fa-play w-4 h-4 mr-3"></i>
+                                Lihat Challenges
+                            </a>
+                            @if(auth()->user()->role === 'admin')
+                            <a href="{{ route('admin.challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                                <i class="fas fa-cog w-4 h-4 mr-3"></i>
+                                Kelola Challenges
+                            </a>
+                            @endif
+                        </div>
+                    </div>
                     
                     @if(auth()->user()->role === 'admin')
                     <a href="{{ route('admin.registrations.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
@@ -72,6 +140,7 @@
                         <div class="ml-3">
                             <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
                             <p class="text-xs text-gray-500">{{ ucfirst(auth()->user()->role) }}</p>
+                            <p class="text-xs text-blue-600 font-medium">{{ auth()->user()->points ?? 0 }} poin</p>
                         </div>
                     </div>
                     <form method="POST" action="{{ route('logout') }}" id="logout-form">

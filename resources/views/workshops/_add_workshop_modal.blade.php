@@ -17,7 +17,7 @@
                 <h3 class="text-xl font-medium text-white">Create New Workshop</h3>
             </div>
 
-            <form id="workshopForm" method="POST" action="{{ route('workshops.store') }}">
+            <form id="workshopForm">
                 @csrf
                 <div class="p-6 space-y-4">
                     <div>

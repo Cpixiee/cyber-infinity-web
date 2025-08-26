@@ -1,5 +1,7 @@
 import './bootstrap';
 import '../css/app.css';
+import '../css/alerts.css';
+import './alerts.js';
 
 
 

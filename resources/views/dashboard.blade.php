@@ -6,6 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>Dashboard - Cyber Infinity</title>
     
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
+    
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
@@ -91,6 +95,55 @@
                         Workshop
                     </a>
                     
+                    <!-- Challenges Dropdown -->
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                            <div class="flex items-center">
+                                <i class="fas fa-flag w-5 h-5 mr-3"></i>
+                                <span>Challenges</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        
+                        <div x-show="open" x-transition class="mt-1 ml-6 space-y-1">
+                            <a href="{{ route('challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                                <i class="fas fa-play w-4 h-4 mr-3"></i>
+                                Lihat Challenges
+                            </a>
+                            @if(auth()->user()->role === 'admin')
+                            <a href="{{ route('admin.challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                                <i class="fas fa-cog w-4 h-4 mr-3"></i>
+                                Kelola Challenges
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                    
+                    <!-- CTF Dropdown -->
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                            <div class="flex items-center">
+                                <i class="fas fa-trophy w-5 h-5 mr-3"></i>
+                                <span>CTF</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        
+                        <div x-show="open" x-transition class="mt-1 ml-6 space-y-1">
+                            <a href="{{ route('ctf.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                                <i class="fas fa-flag w-4 h-4 mr-3"></i>
+                                CTF Events
+                            </a>
+
+                            @if(auth()->user()->isAdmin())
+                            <a href="{{ route('admin.ctf.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                                <i class="fas fa-cog w-4 h-4 mr-3"></i>
+                                Manage CTF
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                    
                     @if(auth()->user()->role === 'admin')
                     <a href="{{ route('admin.registrations.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-user-check w-5 h-5 mr-3"></i>
@@ -113,6 +166,10 @@
                         <div class="ml-3">
                             <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
                             <p class="text-xs text-gray-500">{{ ucfirst(auth()->user()->role) }}</p>
+                            <div class="text-xs font-medium space-y-1">
+                                <p class="text-blue-600">Lab: {{ auth()->user()->points ?? 0 }} pts</p>
+                                <p class="text-purple-600">CTF: {{ auth()->user()->ctf_points ?? 0 }} pts</p>
+                            </div>
                         </div>
                     </div>
                     <form method="POST" action="{{ route('logout') }}" id="logout-form">
