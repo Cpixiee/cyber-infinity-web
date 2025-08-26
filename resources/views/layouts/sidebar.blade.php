@@ -26,6 +26,11 @@
                 Challenges
             </a>
             
+            <a href="{{ route('ctf.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white">
+                <i class="fas fa-trophy w-5 h-5 mr-3 text-yellow-400"></i>
+                CTF Events
+            </a>
+            
             @if(auth()->user()->role === 'admin')
             <a href="{{ route('admin.registrations.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white">
                 <i class="fas fa-user-check w-5 h-5 mr-3"></i>
@@ -35,6 +40,11 @@
             <a href="{{ route('admin.challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white">
                 <i class="fas fa-cog w-5 h-5 mr-3"></i>
                 Kelola Challenges
+            </a>
+            
+            <a href="{{ route('admin.ctf.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-300 rounded-lg hover:bg-gray-700 hover:text-white">
+                <i class="fas fa-trophy w-5 h-5 mr-3 text-yellow-400"></i>
+                Kelola CTF
             </a>
             @endif
             
@@ -47,12 +57,21 @@
         <!-- User Profile & Logout -->
         <div class="border-t border-gray-700 p-4">
             <div class="flex items-center mb-3">
-                <div class="w-8 h-8 bg-gray-600 rounded-full flex items-center justify-center">
-                    <i class="fas fa-user text-gray-300 text-sm"></i>
-                </div>
+                @if(auth()->user()->avatar)
+                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" 
+                         class="w-8 h-8 rounded-full object-cover sidebar-avatar">
+                @else
+                    <div class="w-8 h-8 bg-gradient-to-r from-cyber-accent to-cyber-secondary rounded-full flex items-center justify-center">
+                        <span class="text-black text-xs font-bold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                    </div>
+                @endif
                 <div class="ml-3">
                     <p class="text-sm font-medium text-white">{{ auth()->user()->name }}</p>
-                    <p class="text-xs text-gray-400">{{ ucfirst(auth()->user()->role) }}</p>
+                    @if(auth()->user()->username)
+                        <p class="text-xs text-cyber-accent">{{ auth()->user()->username ? '@' . auth()->user()->username : '@' . strtolower(str_replace(' ', '', auth()->user()->name)) }}</p>
+                    @else
+                        <p class="text-xs text-gray-400">{{ ucfirst(auth()->user()->role) }}</p>
+                    @endif
                 </div>
             </div>
             <form method="POST" action="{{ route('logout') }}" id="logout-form">

@@ -4,53 +4,11 @@ document.addEventListener('DOMContentLoaded', () => {
     setupModals();
 });
 
-// Hacker effects
+// Hacker effects - now using unified matrix effect
 function initializeHackerEffects() {
-    const container = document.getElementById('matrix-container');
-    if (!container) return;
-
-    // Matrix rain effect
-    const canvas = document.createElement('canvas');
-    canvas.style.width = '100%';
-    canvas.style.height = '100%';
-    container.appendChild(canvas);
-
-    const ctx = canvas.getContext('2d');
-    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()';
-    const fontSize = 10;
-    const columns = Math.floor(window.innerWidth / fontSize);
-    let drops = [];
-
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    for (let i = 0; i < columns; i++) {
-        drops[i] = 1;
-    }
-
-    function draw() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = '#0F0';
-        ctx.font = fontSize + 'px monospace';
-
-        for (let i = 0; i < drops.length; i++) {
-            const text = characters[Math.floor(Math.random() * characters.length)];
-            ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-            if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-                drops[i] = 0;
-            }
-            drops[i]++;
-        }
-    }
-
-    setInterval(draw, 33);
-
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        drops = Array(Math.floor(window.innerWidth / fontSize)).fill(1);
-    });
+    // Matrix effect is now handled by matrix-unified.js
+    // This function is kept for backward compatibility
+    console.log('Hacker effects initialized - using unified matrix system');
 }
 
 // Modal handling

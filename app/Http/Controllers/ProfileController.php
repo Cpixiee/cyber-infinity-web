@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class ProfileController extends Controller
@@ -31,6 +32,11 @@ class ProfileController extends Controller
         
         if ($request->filled('username')) {
             $user->username = $validated['username'];
+        }
+
+        // Mark username as set if username was provided
+        if ($request->filled('username')) {
+            $user->has_set_username = true;
         }
 
         $user->save();
@@ -69,29 +75,73 @@ class ProfileController extends Controller
 
     public function updateAvatar(Request $request)
     {
-        $request->validate([
-            'avatar' => ['required', 'image', 'max:5120'] // 5MB
-        ]);
+        try {
+            $request->validate([
+                'avatar' => ['required', 'file', 'mimes:jpeg,jpg,png,gif', 'max:5120'] // 5MB
+            ]);
 
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-        
-        // Delete old avatar if exists
-        if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
-            Storage::disk('public')->delete($user->avatar);
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+            
+            $file = $request->file('avatar');
+            
+            // Additional validation
+            if (!$file || !$file->isValid()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File tidak valid atau rusak.'
+                ], 422);
+            }
+
+            // Check if it's actually an image
+            $imageInfo = getimagesize($file->getPathname());
+            if (!$imageInfo) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'File yang diupload bukan gambar yang valid.'
+                ], 422);
+            }
+
+            // Delete old avatar if exists
+            if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
+                Storage::disk('public')->delete($user->avatar);
+            }
+
+            // Generate unique filename
+            $filename = 'avatar_' . $user->id . '_' . time() . '.' . $file->getClientOriginalExtension();
+            
+            // Store new avatar
+            $avatarPath = $file->storeAs('avatars', $filename, 'public');
+            
+            if (!$avatarPath) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal menyimpan file avatar.'
+                ], 500);
+            }
+            
+            $user->avatar = $avatarPath;
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Avatar berhasil diperbarui.',
+                'avatar_url' => Storage::url($avatarPath)
+            ]);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validasi gagal.',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            Log::error('Avatar upload error: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengupload avatar. ' . $e->getMessage()
+            ], 500);
         }
-
-        // Store new avatar
-        $avatarPath = $request->file('avatar')->store('avatars', 'public');
-        
-        $user->avatar = $avatarPath;
-        $user->save();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Avatar berhasil diperbarui.',
-            'avatar_url' => Storage::url($avatarPath)
-        ]);
     }
 
     public function sendOtp(Request $request)
@@ -161,6 +211,32 @@ class ProfileController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Email berhasil diperbarui.'
+        ]);
+    }
+
+    public function setupUsername(Request $request)
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        
+        $validated = $request->validate([
+            'name' => ['nullable', 'string', 'max:255'],
+            'username' => ['required', 'string', 'max:255', 'unique:users,username,' . $user->id, 'regex:/^[a-zA-Z0-9_]+$/'],
+        ]);
+
+        // Update name if provided
+        if ($request->filled('name')) {
+            $user->name = $validated['name'];
+        }
+        
+        // Set username (required)
+        $user->username = $validated['username'];
+        $user->has_set_username = true;
+        $user->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Username berhasil diatur! Selamat datang di Cyber Infinity.'
         ]);
     }
 }

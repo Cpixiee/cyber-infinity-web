@@ -20,6 +20,17 @@ class Challenge extends Model
         'created_by'
     ];
 
+    /**
+     * The attributes that should not be mass assignable.
+     *
+     * @var array<string>
+     */
+    protected $guarded = [
+        'id',
+        'created_at',
+        'updated_at',
+    ];
+
     protected $casts = [
         'points' => 'integer',
         'status' => 'string'

@@ -199,7 +199,7 @@
                 <div class="max-w-2xl mx-auto">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="p-6">
-                            <form action="{{ route('admin.ctf.store') }}" method="POST" enctype="multipart/form-data">
+                            <form action="{{ route('admin.ctf.store') }}" method="POST" enctype="multipart/form-data" onsubmit="return preventDoubleSubmit(this)">
                                 @csrf
                                 
                                 <!-- CTF Name -->
@@ -334,8 +334,8 @@
                                     <a href="{{ route('admin.ctf.index') }}" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
                                         Batal
                                     </a>
-                                    <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                                        <i class="fas fa-save mr-2"></i>Buat CTF Event
+                                    <button type="submit" id="submitBtn" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed">
+                                        <i class="fas fa-save mr-2" id="submitIcon"></i><span id="submitText">Buat CTF Event</span>
                                     </button>
                                 </div>
                             </form>
@@ -485,6 +485,65 @@
         } else {
             initializeResponsiveSidebar();
         }
+        // Enhanced double submission prevention
+        let isSubmitting = false;
+        
+        function preventDoubleSubmit(form) {
+            console.log('preventDoubleSubmit called, isSubmitting:', isSubmitting);
+            
+            // If already submitting, prevent
+            if (isSubmitting) {
+                console.log('Already submitting, preventing duplicate');
+                return false;
+            }
+            
+            // Set submitting flag
+            isSubmitting = true;
+            
+            const submitBtn = document.getElementById('submitBtn');
+            const submitText = document.getElementById('submitText');
+            const submitIcon = document.getElementById('submitIcon');
+            
+            if (submitBtn) {
+                // Disable button immediately
+                submitBtn.disabled = true;
+                submitBtn.style.pointerEvents = 'none';
+                
+                if (submitText) submitText.textContent = 'Membuat CTF...';
+                if (submitIcon) submitIcon.className = 'fas fa-spinner fa-spin mr-2';
+                
+                console.log('Button disabled and text changed');
+            }
+            
+            // Failsafe reset after 10 seconds
+            setTimeout(() => {
+                isSubmitting = false;
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.style.pointerEvents = 'auto';
+                    if (submitText) submitText.textContent = 'Buat CTF Event';
+                    if (submitIcon) submitIcon.className = 'fas fa-save mr-2';
+                }
+                console.log('Reset after timeout');
+            }, 10000);
+            
+            return true;
+        }
+        
+        // Additional protection via click handler
+        document.addEventListener('DOMContentLoaded', function() {
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', function(e) {
+                    if (isSubmitting) {
+                        console.log('Click blocked - already submitting');
+                        e.preventDefault();
+                        e.stopPropagation();
+                        return false;
+                    }
+                });
+            }
+        });
     </script>
 </body>
 </html>

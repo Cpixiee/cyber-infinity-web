@@ -22,12 +22,21 @@ Route::get('/test-tailwind', function () {
     return view('test-tailwind');
 })->name('test.tailwind');
 
+// CAPTCHA Routes
+Route::get('/captcha', [App\Http\Controllers\CaptchaController::class, 'generate'])->name('captcha.generate');
+Route::post('/captcha/verify', [App\Http\Controllers\CaptchaController::class, 'verify'])->name('captcha.verify');
+
 // Authentication Routes
-Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-Route::post('/login', [AuthController::class, 'login']);
-Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
-Route::post('/register', [AuthController::class, 'register']);
-Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::middleware(['guest'])->group(function () {
+    Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:5,1'); // 5 attempts per minute
+    Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1'); // 10 attempts per minute (lebih fleksibel)
+});
+
+Route::middleware(['auth'])->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+});
 
 // Auth Routes Group
 Route::middleware(['auth'])->group(function () {
@@ -41,6 +50,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/profile/avatar', [ProfileController::class, 'updateAvatar'])->name('profile.avatar');
     Route::post('/profile/send-otp', [ProfileController::class, 'sendOtp'])->name('profile.send-otp');
     Route::post('/profile/verify-otp', [ProfileController::class, 'verifyOtp'])->name('profile.verify-otp');
+    Route::post('/profile/setup-username', [ProfileController::class, 'setupUsername'])->name('profile.setup-username');
 
     // Workshop Routes for Admin
     Route::group(['middleware' => ['auth', \App\Http\Middleware\AdminMiddleware::class]], function () {
@@ -64,8 +74,12 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('challenges')->name('challenges.')->group(function () {
         Route::get('/', [ChallengeController::class, 'index'])->name('index');
         Route::get('/{challenge}', [ChallengeController::class, 'show'])->name('show');
-        Route::post('/{challenge}/tasks/{task}/submit', [ChallengeController::class, 'submitFlag'])->name('submit');
-        Route::post('/hints/{hint}/purchase', [ChallengeController::class, 'purchaseHint'])->name('hint.purchase');
+        Route::post('/{challenge}/tasks/{task}/submit', [ChallengeController::class, 'submitFlag'])
+            ->name('submit')
+            ->middleware('throttle:10,1'); // 10 flag submissions per minute
+        Route::post('/hints/{hint}/purchase', [ChallengeController::class, 'purchaseHint'])
+            ->name('hint.purchase')
+            ->middleware('throttle:5,1'); // 5 hint purchases per minute
     });
 
     // Notification Routes
@@ -150,7 +164,11 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{ctf}', [App\Http\Controllers\CtfController::class, 'show'])->name('show');
         Route::get('/{ctf}/leaderboard', [App\Http\Controllers\CtfController::class, 'leaderboard'])->name('leaderboard');
         Route::get('/{ctf}/user/{user}', [App\Http\Controllers\CtfController::class, 'userProfile'])->name('user.profile');
-        Route::post('/{ctf}/challenges/{challenge}/submit', [App\Http\Controllers\CtfController::class, 'submitFlag'])->name('submit');
-        Route::post('/challenges/{challenge}/hints/purchase', [App\Http\Controllers\CtfController::class, 'purchaseHint'])->name('hint.purchase');
+        Route::post('/{ctf}/challenges/{challenge}/submit', [App\Http\Controllers\CtfController::class, 'submitFlag'])
+            ->name('submit')
+            ->middleware('throttle:5,1'); // 5 CTF flag submissions per minute
+        Route::post('/challenges/{challenge}/hints/purchase', [App\Http\Controllers\CtfController::class, 'purchaseHint'])
+            ->name('hint.purchase')
+            ->middleware('throttle:3,1'); // 3 CTF hint purchases per minute
     });
 });

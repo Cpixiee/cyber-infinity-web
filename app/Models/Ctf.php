@@ -48,7 +48,8 @@ class Ctf extends Model
     public function participants()
     {
         return $this->belongsToMany(User::class, 'ctf_submissions', 'ctf_id', 'user_id')
-            ->distinct();
+            ->distinct()
+            ->select('users.*');
     }
 
     // Helper methods
@@ -71,14 +72,39 @@ class Ctf extends Model
     public function getTimeRemaining()
     {
         if (!$this->hasStarted()) {
-            return $this->start_time->diffForHumans();
+            return 'Starts ' . $this->start_time->diffForHumans();
         }
         
         if (!$this->hasEnded()) {
-            return $this->end_time->diffForHumans();
+            return 'Ends ' . $this->end_time->diffForHumans();
         }
         
         return 'Ended';
+    }
+
+    public function getStatus()
+    {
+        if ($this->status === 'draft') {
+            return 'draft';
+        }
+        
+        if ($this->status === 'inactive') {
+            return 'inactive';
+        }
+        
+        if ($this->isActive()) {
+            return 'live';
+        }
+        
+        if ($this->hasEnded()) {
+            return 'ended';
+        }
+        
+        if (!$this->hasStarted() && $this->status === 'active') {
+            return 'upcoming';
+        }
+        
+        return 'unknown';
     }
 
     public function getDuration()
@@ -103,7 +129,7 @@ class Ctf extends Model
 
     public function getLeaderboard($limit = 10)
     {
-        return User::select('users.*')
+        return User::select('users.id', 'users.name', 'users.username', 'users.email', 'users.avatar', 'users.created_at', 'users.updated_at')
             ->selectRaw('SUM(ctf_submissions.points_earned) as total_points')
             ->selectRaw('COUNT(DISTINCT ctf_submissions.ctf_challenge_id) as solved_challenges')
             ->selectRaw('MIN(ctf_submissions.submitted_at) as first_solve_time')
@@ -111,7 +137,7 @@ class Ctf extends Model
             ->where('ctf_submissions.ctf_id', $this->id)
             ->where('ctf_submissions.status', 'correct')
             ->whereNotNull('users.id')
-            ->groupBy('users.id')
+            ->groupBy('users.id', 'users.name', 'users.username', 'users.email', 'users.avatar', 'users.created_at', 'users.updated_at')
             ->orderByDesc('total_points')
             ->orderBy('first_solve_time')
             ->limit($limit)
@@ -147,7 +173,9 @@ class Ctf extends Model
 
     public function getTotalParticipants()
     {
-        return $this->participants()->count();
+        return $this->submissions()
+            ->distinct('user_id')
+            ->count('user_id');
     }
 
     public function canUserJoin($user)

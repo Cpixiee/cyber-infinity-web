@@ -304,13 +304,17 @@
                                                         <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
                                                             <i class="fas fa-flag-checkered mr-1"></i>Ended
                                                         </span>
-                                                    @elseif($ctf->status == 'active')
+                                                    @elseif($ctf->status == 'active' && !$ctf->hasStarted())
                                                         <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                                            <i class="fas fa-clock mr-1"></i>Upcoming
+                                                            <i class="fas fa-clock mr-1"></i>Upcoming ({{ $ctf->start_time->diffForHumans() }})
                                                         </span>
-                                                    @else
+                                                    @elseif($ctf->status == 'inactive')
                                                         <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
                                                             <i class="fas fa-eye-slash mr-1"></i>Inactive
+                                                        </span>
+                                                    @else
+                                                        <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                                            <i class="fas fa-question mr-1"></i>Unknown Status
                                                         </span>
                                                     @endif
                                                 </td>

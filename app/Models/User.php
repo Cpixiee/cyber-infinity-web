@@ -28,6 +28,7 @@ class User extends Authenticatable
         'points',
         'ctf_points',
         'total_ctf_solves',
+        'has_set_username',
     ];
 
     /**
@@ -38,6 +39,19 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+    ];
+
+    /**
+     * The attributes that should not be mass assignable.
+     *
+     * @var array<string>
+     */
+    protected $guarded = [
+        'id',
+        'email_verified_at',
+        'remember_token',
+        'created_at',
+        'updated_at',
     ];
 
     /**
@@ -83,6 +97,16 @@ class User extends Authenticatable
     public function isGuest()
     {
         return $this->role === 'guest';
+    }
+
+    /**
+     * Check if user needs to set username (new user)
+     *
+     * @return bool
+     */
+    public function needsUsernameSetup()
+    {
+        return !$this->has_set_username && empty($this->username);
     }
 
     /**

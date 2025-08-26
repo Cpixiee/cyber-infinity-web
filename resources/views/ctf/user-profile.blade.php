@@ -38,7 +38,7 @@
                                 <i class="fas fa-user text-3xl text-white"></i>
                             </div>
                             <h2 class="text-xl font-bold text-gray-900 mb-1">{{ $user->name }}</h2>
-                            <p class="text-gray-600 mb-4">{{ $user->username ?? '@' . strtolower(str_replace(' ', '', $user->name)) }}</p>
+                            <p class="text-gray-600 mb-4">{{ $user->username ? '@' . $user->username : '@' . strtolower(str_replace(' ', '', $user->name)) }}</p>
                             
                             <!-- Rank Badge -->
                             @if($userStats['rank'])

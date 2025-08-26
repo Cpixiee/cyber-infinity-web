@@ -1,160 +1,121 @@
-<!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Profile Settings - Cyber Infinity</title>
-    
-    <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
-    
-    <!-- Font Awesome for Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-    
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
-    <!-- Croppr.js for image cropping -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/croppr@2.3.1/dist/croppr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/croppr@2.3.1/dist/croppr.min.js"></script>
-    
-    <!-- Vite Assets -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-</head>
+@extends('layouts.master')
 
-<body class="bg-gray-900 text-white">
-    <div class="min-h-screen flex">
-        <!-- Include Sidebar -->
-        @include('layouts.sidebar')
+@section('title', 'Profile Settings - Cyber Infinity')
 
-        <!-- Main content -->
-        <div class="flex-1 lg:ml-0">
-            <!-- Mobile header -->
-            <div class="lg:hidden bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
-                <button id="mobile-menu-btn" class="text-gray-400 hover:text-white">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                <h1 class="text-lg font-semibold text-white">Profile Settings</h1>
-                <div></div>
-            </div>
+@section('header', 'Profile Settings')
 
-            <!-- Page header -->
-            <header class="bg-gray-800 border-b border-gray-700">
-                <div class="px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <h1 class="text-2xl font-bold text-white flex items-center">
-                                <i class="fas fa-user-cog mr-3 text-green-400"></i>
-                                Profile Settings
-                            </h1>
-                            <p class="text-gray-400 mt-1">Kelola informasi akun dan pengaturan keamanan</p>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <div class="text-right">
-                                <p class="text-sm text-gray-400">Poin Anda</p>
-                                <p class="text-lg font-bold text-green-400">{{ auth()->user()->points ?? 0 }}</p>
-                            </div>
-                        </div>
+@section('content')
+<div class="min-h-screen bg-gray-50" style="margin-top: 20px; margin-bottom: 20px;">
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h1 class="text-2xl font-bold text-gray-900 flex items-center">
+                        <i class="fas fa-user-cog mr-3 text-blue-600"></i>
+                        Profile Settings
+                    </h1>
+                    <p class="text-gray-600 mt-1">Kelola informasi akun dan pengaturan keamanan</p>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Poin Lab</p>
+                        <p class="text-lg font-bold text-blue-600">{{ auth()->user()->points ?? 0 }}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm text-gray-500">Poin CTF</p>
+                        <p class="text-lg font-bold text-purple-600">{{ auth()->user()->ctf_points ?? 0 }}</p>
                     </div>
                 </div>
-            </header>
+            </div>
+        </div>
+    </header>
 
-            <!-- Main content -->
-            <main class="flex-1 p-6">
-                <div class="max-w-4xl mx-auto">
-                    <!-- Profile Tabs -->
-                    <div x-data="{ activeTab: 'profile' }" class="space-y-6">
-                        <!-- Tab Navigation -->
-                        <div class="flex flex-wrap gap-2">
-                            <button @click="activeTab = 'profile'" :class="{ 'bg-green-500 text-black': activeTab === 'profile', 'bg-gray-700 text-gray-300': activeTab !== 'profile' }" 
-                                    class="px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                                <i class="fas fa-user mr-2"></i>Profile Info
-                            </button>
-                            <button @click="activeTab = 'security'" :class="{ 'bg-green-500 text-black': activeTab === 'security', 'bg-gray-700 text-gray-300': activeTab !== 'security' }" 
-                                    class="px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                                <i class="fas fa-shield-alt mr-2"></i>Security
-                            </button>
-                            <button @click="activeTab = 'avatar'" :class="{ 'bg-green-500 text-black': activeTab === 'avatar', 'bg-gray-700 text-gray-300': activeTab !== 'avatar' }" 
-                                    class="px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                                <i class="fas fa-camera mr-2"></i>Avatar
-                            </button>
+    <!-- Main Content -->
+    <main class="flex-1 p-6">
+        <div class="max-w-4xl mx-auto">
+
+        <!-- Profile Tabs -->
+        <div x-data="{ activeTab: 'profile' }" class="space-y-8">
+            <!-- Tab Navigation -->
+            <div class="flex flex-wrap justify-center gap-2">
+                <button @click="activeTab = 'profile'" 
+                        :class="{ 'bg-blue-600 text-white': activeTab === 'profile', 'bg-white text-gray-700 border-gray-300': activeTab !== 'profile' }" 
+                        class="px-4 py-2 border rounded-lg font-medium transition-all duration-200 hover:bg-blue-50">
+                    <i class="fas fa-user mr-2"></i>Profile Info
+                </button>
+                <button @click="activeTab = 'security'" 
+                        :class="{ 'bg-blue-600 text-white': activeTab === 'security', 'bg-white text-gray-700 border-gray-300': activeTab !== 'security' }" 
+                        class="px-4 py-2 border rounded-lg font-medium transition-all duration-200 hover:bg-blue-50">
+                    <i class="fas fa-shield-alt mr-2"></i>Security
+                </button>
+                <button @click="activeTab = 'avatar'" 
+                        :class="{ 'bg-blue-600 text-white': activeTab === 'avatar', 'bg-white text-gray-700 border-gray-300': activeTab !== 'avatar' }" 
+                        class="px-4 py-2 border rounded-lg font-medium transition-all duration-200 hover:bg-blue-50">
+                    <i class="fas fa-camera mr-2"></i>Avatar
+                </button>
+            </div>
+
+            <!-- Profile Info Tab -->
+            <div x-show="activeTab === 'profile'" x-transition class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-user-edit text-blue-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Informasi Profile</h2>
+                </div>
+
+                <form id="profileForm" onsubmit="return handleProfileSubmit(event)">
+                    @csrf
+                    @method('PATCH')
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Name -->
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-user mr-2 text-blue-600"></i>Nama Lengkap
+                            </label>
+                            <input type="text" name="name" id="name" value="{{ old('name', auth()->user()->name) }}" required
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                                placeholder="Masukkan nama lengkap">
                         </div>
 
-                        <!-- Profile Info Tab -->
-                        <div x-show="activeTab === 'profile'" x-transition class="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6">
-                            <div class="flex items-center mb-6">
-                                <i class="fas fa-user-edit text-2xl text-green-400 mr-3"></i>
-                                <h2 class="text-xl font-bold">Informasi Profile</h2>
-                            </div>
-
-                            <form id="profileForm" onsubmit="return handleProfileSubmit(event)">
-                                @csrf
-                                @method('PATCH')
-                                
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <!-- Name -->
-                                    <div>
-                                        <label for="name" class="block text-sm font-medium text-gray-300 mb-2">
-                                            <i class="fas fa-user mr-2 text-green-400"></i>Nama Lengkap
-                                        </label>
-                                        <input type="text" name="name" id="name" value="{{ old('name', auth()->user()->name) }}" required
-                                            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500 transition-colors duration-200"
-                                            placeholder="Masukkan nama lengkap">
-                                    </div>
-
-                                    <!-- Username -->
-                                    <div>
-                                        <label for="username" class="block text-sm font-medium text-gray-300 mb-2">
-                                            <i class="fas fa-at mr-2 text-blue-400"></i>Username
-                                        </label>
-                                        <input type="text" name="username" id="username" value="{{ old('username', auth()->user()->username ?? '') }}"
-                                            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500 transition-colors duration-200"
-                                            placeholder="Pilih username unik">
-                                        <p class="text-xs text-gray-400 mt-1">Username akan digunakan untuk login dan profil publik</p>
-                                    </div>
-
-                                    <!-- Email -->
-                                    <div class="md:col-span-2">
-                                        <label for="email" class="block text-sm font-medium text-gray-300 mb-2">
-                                            <i class="fas fa-envelope mr-2 text-yellow-400"></i>Email Address
-                                        </label>
-                                        <div class="flex gap-3">
-                                            <input type="email" name="email" id="email" value="{{ old('email', auth()->user()->email) }}" required readonly
-                                                class="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none"
-                                                placeholder="nama@email.com">
-                                            <button type="button" onclick="requestEmailChange()" class="px-4 py-2 bg-yellow-500 text-black rounded-lg hover:bg-yellow-600 font-medium transition-colors duration-200">
-                                                <i class="fas fa-edit mr-2"></i>Ubah Email
-                                            </button>
-                                        </div>
-                                        <p class="text-xs text-gray-400 mt-1">Perubahan email memerlukan verifikasi OTP</p>
-                                    </div>
-                                </div>
-
-                                <div class="mt-8 flex gap-3">
-                                    <button type="submit" class="bg-green-500 hover:bg-green-600 text-black px-6 py-3 rounded-lg font-bold transition-colors duration-200" id="profileBtn">
-                                        <span id="profileBtnText">
-                                            <i class="fas fa-save mr-2"></i>Simpan Perubahan
-                                        </span>
-                                        <i id="profileSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
-                                    </button>
-                                    <button type="button" onclick="resetForm()" class="bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
-                                        <i class="fas fa-undo mr-2"></i>Reset
-                                    </button>
-                                </div>
-                            </form>
+                        <!-- Username -->
+                        <div>
+                            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                                <i class="fas fa-at mr-2 text-purple-600"></i>Username
+                            </label>
+                            <input type="text" name="username" id="username" value="{{ old('username', auth()->user()->username ?? '') }}"
+                                class="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors duration-200"
+                                placeholder="Pilih username unik">
+                            <p class="text-xs text-gray-500 mt-1">Username akan digunakan untuk login dan profil publik</p>
                         </div>
 
-                        <!-- Security Tab -->
-                        <div x-show="activeTab === 'security'" x-transition class="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6">
-                            <div class="flex items-center mb-6">
-                                <i class="fas fa-shield-alt text-2xl text-red-400 mr-3"></i>
-                                <h2 class="text-xl font-bold">Keamanan Akun</h2>
-                            </div>
+
+                    </div>
+
+                    <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors duration-200" id="profileBtn">
+                            <span id="profileBtnText">
+                                <i class="fas fa-save mr-2"></i>Simpan Perubahan
+                            </span>
+                            <i id="profileSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                        </button>
+                        <button type="button" onclick="resetForm()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                            <i class="fas fa-undo mr-2"></i>Reset
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Security Tab -->
+            <div x-show="activeTab === 'security'" x-transition class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-shield-alt text-red-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Keamanan Akun</h2>
+                </div>
 
                             <form id="passwordForm" onsubmit="return handlePasswordSubmit(event)">
                                 @csrf
@@ -203,12 +164,14 @@
                             </form>
                         </div>
 
-                        <!-- Avatar Tab -->
-                        <div x-show="activeTab === 'avatar'" x-transition class="bg-gray-800 rounded-xl shadow-sm border border-gray-700 p-6">
-                            <div class="flex items-center mb-6">
-                                <i class="fas fa-camera text-2xl text-purple-400 mr-3"></i>
-                                <h2 class="text-xl font-bold">Foto Profile</h2>
-                            </div>
+            <!-- Avatar Tab -->
+            <div x-show="activeTab === 'avatar'" x-transition class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div class="flex items-center mb-6">
+                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="fas fa-camera text-purple-600 text-xl"></i>
+                    </div>
+                    <h2 class="text-xl font-bold text-gray-900">Foto Profile</h2>
+                </div>
 
                             <div class="text-center">
                                 <!-- Current Avatar -->
@@ -240,54 +203,19 @@
                                             <i class="fas fa-times mr-2"></i>Batal
                                         </button>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
-            </main>
-        </div>
-    </div>
-
-    <!-- OTP Modal -->
-    <div id="otpModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center">
-        <div class="bg-gray-800 rounded-xl p-6 max-w-md w-full mx-4 border border-gray-700">
-            <div class="text-center mb-6">
-                <i class="fas fa-envelope-open text-4xl text-green-400 mb-4"></i>
-                <h3 class="text-xl font-bold mb-2">Verifikasi Email</h3>
-                <p class="text-gray-400 text-sm">Masukkan kode OTP yang dikirim ke email baru Anda</p>
             </div>
-            
-            <form id="otpForm" onsubmit="return handleOtpSubmit(event)">
-                <div class="flex justify-center mb-6 gap-2">
-                    <input type="text" maxlength="1" class="w-12 h-12 text-center text-xl font-bold bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500" oninput="moveToNext(this, 1)">
-                    <input type="text" maxlength="1" class="w-12 h-12 text-center text-xl font-bold bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500" oninput="moveToNext(this, 2)">
-                    <input type="text" maxlength="1" class="w-12 h-12 text-center text-xl font-bold bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500" oninput="moveToNext(this, 3)">
-                    <input type="text" maxlength="1" class="w-12 h-12 text-center text-xl font-bold bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500" oninput="moveToNext(this, 4)">
-                    <input type="text" maxlength="1" class="w-12 h-12 text-center text-xl font-bold bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500" oninput="moveToNext(this, 5)">
-                    <input type="text" maxlength="1" class="w-12 h-12 text-center text-xl font-bold bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500" oninput="moveToNext(this, 6)">
-                </div>
-                
-                <div class="flex gap-3">
-                    <button type="submit" class="flex-1 bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-lg font-bold transition-colors duration-200">
-                        <i class="fas fa-check mr-2"></i>Verifikasi
-                    </button>
-                    <button type="button" onclick="closeOtpModal()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
-                        <i class="fas fa-times mr-2"></i>Batal
-                    </button>
-                </div>
-                
-                <div class="text-center mt-4">
-                    <button type="button" onclick="resendOtp()" class="text-green-400 hover:text-green-300 text-sm">
-                        <i class="fas fa-redo mr-1"></i>Kirim ulang kode
-                    </button>
-                </div>
-            </form>
         </div>
     </div>
+</div>
 
-    <!-- Scripts -->
-    <script src="{{ asset('js/cyber-alerts.js') }}"></script>
+
+
+
+
+<!-- Scripts -->
+<script src="{{ asset('js/cyber-alerts.js') }}"></script>
     
     <script>
         let croppr;
@@ -440,41 +368,78 @@
 
         // Crop and save avatar
         function cropAndSave() {
-            if (!croppr) return;
+            if (!croppr) {
+                showErrorToast('Error', 'Crop tool tidak tersedia. Silakan upload ulang gambar.');
+                return;
+            }
             
-            const canvas = croppr.getCroppedCanvas({
-                width: 300,
-                height: 300
-            });
-            
-            canvas.toBlob(function(blob) {
-                const formData = new FormData();
-                formData.append('avatar', blob, 'avatar.jpg');
-                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            try {
+                const canvas = croppr.getCroppedCanvas({
+                    width: 300,
+                    height: 300
+                });
+                
+                if (!canvas) {
+                    showErrorToast('Error', 'Gagal memproses gambar. Silakan coba lagi.');
+                    return;
+                }
                 
                 showLoadingDialog('Mengupload avatar...', 'Mohon tunggu sebentar');
                 
-                fetch('{{ route("profile.avatar") }}', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.close();
-                    
-                    if (data.success) {
-                        document.getElementById('currentAvatar').src = data.avatar_url;
-                        showSuccessToast('Avatar berhasil diperbarui!');
-                        cancelCrop();
-                    } else {
-                        showErrorToast('Gagal mengupload avatar', data.message);
+                canvas.toBlob(function(blob) {
+                    if (!blob) {
+                        Swal.close();
+                        showErrorToast('Error', 'Gagal memproses gambar. Silakan coba lagi.');
+                        return;
                     }
-                })
-                .catch(error => {
-                    Swal.close();
-                    showErrorToast('Terjadi kesalahan', 'Silakan coba lagi');
-                });
-            }, 'image/jpeg', 0.9);
+                    
+                    const formData = new FormData();
+                    formData.append('avatar', blob, 'avatar.jpg');
+                    formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                    
+                    fetch('{{ route("profile.avatar") }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        Swal.close();
+                        
+                        if (data.success) {
+                            // Update avatar image with cache busting
+                            const avatarUrl = data.avatar_url + '?t=' + new Date().getTime();
+                            document.getElementById('currentAvatar').src = avatarUrl;
+                            showSuccessToast('Avatar berhasil diperbarui!');
+                            cancelCrop();
+                            
+                            // Update sidebar avatar if exists
+                            const sidebarAvatar = document.querySelector('.sidebar-avatar, .nav-avatar');
+                            if (sidebarAvatar) {
+                                sidebarAvatar.src = avatarUrl;
+                            }
+                        } else {
+                            showErrorToast('Gagal mengupload avatar', data.message || 'Terjadi kesalahan');
+                        }
+                    })
+                    .catch(error => {
+                        Swal.close();
+                        console.error('Upload error:', error);
+                        showErrorToast('Terjadi kesalahan', 'Gagal mengupload avatar. Silakan coba lagi.');
+                    });
+                }, 'image/jpeg', 0.9);
+                
+            } catch (error) {
+                console.error('Crop error:', error);
+                showErrorToast('Error', 'Gagal memproses gambar. Silakan coba lagi.');
+            }
         }
 
         // Cancel crop
@@ -487,139 +452,7 @@
             }
         }
 
-        // Request email change
-        function requestEmailChange() {
-            const currentEmail = document.getElementById('email').value;
-            
-            Swal.fire({
-                title: 'Ubah Email',
-                html: `
-                    <div class="text-left">
-                        <label class="block text-sm font-medium text-gray-300 mb-2">Email Baru</label>
-                        <input type="email" id="newEmailInput" class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg" placeholder="email@baru.com">
-                    </div>
-                `,
-                showCancelButton: true,
-                confirmButtonText: 'Kirim OTP',
-                cancelButtonText: 'Batal',
-                background: '#1f2937',
-                color: '#fff',
-                preConfirm: () => {
-                    const newEmailValue = document.getElementById('newEmailInput').value;
-                    if (!newEmailValue || !isValidEmail(newEmailValue)) {
-                        Swal.showValidationMessage('Email tidak valid');
-                        return false;
-                    }
-                    if (newEmailValue === currentEmail) {
-                        Swal.showValidationMessage('Email baru harus berbeda dengan email saat ini');
-                        return false;
-                    }
-                    return newEmailValue;
-                }
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    newEmail = result.value;
-                    sendOtpCode(newEmail);
-                }
-            });
-        }
 
-        // Send OTP code
-        function sendOtpCode(email) {
-            showLoadingDialog('Mengirim kode OTP...', 'Kode akan dikirim ke email baru Anda');
-            
-            fetch('{{ route("profile.send-otp") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ email: email })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                
-                if (data.success) {
-                    showInfoToast('Kode OTP: ' + data.debug_otp, 'Silakan cek email Anda (Debug mode)');
-                    document.getElementById('otpModal').classList.remove('hidden');
-                } else {
-                    showErrorToast('Gagal mengirim OTP', data.message);
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                showErrorToast('Terjadi kesalahan', 'Silakan coba lagi');
-            });
-        }
-
-        // OTP input navigation
-        function moveToNext(current, nextIndex) {
-            if (current.value.length === 1) {
-                const inputs = document.querySelectorAll('#otpModal input[type="text"]');
-                if (inputs[nextIndex]) {
-                    inputs[nextIndex].focus();
-                }
-            }
-        }
-
-        // Handle OTP submit
-        function handleOtpSubmit(event) {
-            event.preventDefault();
-            
-            const otpInputs = document.querySelectorAll('#otpModal input[type="text"]');
-            const otp = Array.from(otpInputs).map(input => input.value).join('');
-            
-            if (otp.length !== 6) {
-                showErrorToast('Kode OTP tidak lengkap', 'Silakan masukkan 6 digit kode');
-                return false;
-            }
-            
-            showLoadingDialog('Memverifikasi kode...', 'Mohon tunggu sebentar');
-            
-            fetch('{{ route("profile.verify-otp") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({ 
-                    email: newEmail,
-                    otp: otp 
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                Swal.close();
-                
-                if (data.success) {
-                    document.getElementById('email').value = newEmail;
-                    showSuccessToast('Email berhasil diperbarui!');
-                    closeOtpModal();
-                } else {
-                    showErrorToast('Kode OTP tidak valid', data.message);
-                }
-            })
-            .catch(error => {
-                Swal.close();
-                showErrorToast('Terjadi kesalahan', 'Silakan coba lagi');
-            });
-            
-            return false;
-        }
-
-        // Close OTP modal
-        function closeOtpModal() {
-            document.getElementById('otpModal').classList.add('hidden');
-            document.querySelectorAll('#otpModal input[type="text"]').forEach(input => input.value = '');
-            newEmail = '';
-        }
-
-        // Resend OTP
-        function resendOtp() {
-            if (!newEmail) return;
-            sendOtpCode(newEmail);
-        }
 
         // Reset form
         function resetForm() {
@@ -642,5 +475,4 @@
             @endif
         });
     </script>
-</body>
-</html>
+@endsection

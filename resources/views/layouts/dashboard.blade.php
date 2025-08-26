@@ -132,6 +132,8 @@
             <div class="nav-links">
                 <a href="{{ route('dashboard') }}" class="nav-link">Dashboard</a>
                 <a href="{{ route('workshops.index') }}" class="nav-link">Workshops</a>
+                <a href="{{ route('challenges.index') }}" class="nav-link">Challenges</a>
+                <a href="{{ route('ctf.index') }}" class="nav-link">CTF Events</a>
                 @if(auth()->user()->role === 'admin')
                     <a href="{{ route('admin.dashboard') }}" class="nav-link">Admin</a>
                 @endif

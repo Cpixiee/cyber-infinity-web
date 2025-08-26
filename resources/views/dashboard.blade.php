@@ -19,6 +19,16 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- Check if user needs username setup and show popup -->
+    @if(auth()->user()->needsUsernameSetup())
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Show username setup popup
+            showUsernameSetupModal();
+        });
+    </script>
+    @endif
+    
     <!-- Chart.js - try multiple CDNs for reliability -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" 
             onerror="this.onerror=null; this.src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js'"></script>
@@ -1030,6 +1040,133 @@
                 confirmButtonText: 'OK'
             });
         @endif
+        
+        // Function to show username setup modal
+        function showUsernameSetupModal() {
+            Swal.fire({
+                title: '<i class="fas fa-user-plus text-green-500 text-3xl mb-2"></i><br>Selamat Datang!',
+                html: `
+                    <div class="text-left">
+                        <p class="text-gray-600 mb-4">Untuk melengkapi profil Anda, silakan atur username dan nama (opsional):</p>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap (Opsional)</label>
+                                <input type="text" id="swal-name" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                       placeholder="Masukkan nama lengkap" value="{{ auth()->user()->name }}" />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Username <span class="text-red-500">*</span></label>
+                                <input type="text" id="swal-username" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                       placeholder="Masukkan username unik" required />
+                                <p class="text-xs text-gray-500 mt-1">Username akan digunakan untuk profil publik dan leaderboard</p>
+                            </div>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: false,
+                showConfirmButton: true,
+                confirmButtonText: '<i class="fas fa-check mr-2"></i>Simpan',
+                confirmButtonColor: '#10b981',
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                width: '500px',
+                customClass: {
+                    popup: 'rounded-xl',
+                    title: 'text-xl font-bold text-gray-900',
+                    confirmButton: 'px-6 py-2 rounded-lg font-semibold',
+                },
+                preConfirm: () => {
+                    const name = document.getElementById('swal-name').value.trim();
+                    const username = document.getElementById('swal-username').value.trim();
+                    
+                    if (!username) {
+                        Swal.showValidationMessage('Username wajib diisi!');
+                        return false;
+                    }
+                    
+                    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+                        Swal.showValidationMessage('Username hanya boleh mengandung huruf, angka, dan underscore!');
+                        return false;
+                    }
+                    
+                    return { name: name, username: username };
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Submit the data
+                    submitUsernameSetup(result.value.name, result.value.username);
+                }
+            });
+        }
+
+        // Function to submit username setup
+        function submitUsernameSetup(name, username) {
+            // Show loading
+            Swal.fire({
+                title: 'Menyimpan...',
+                text: 'Mohon tunggu sebentar',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                willOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            // Send data to server
+            fetch('{{ route("profile.setup-username") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    name: name,
+                    username: username
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil!',
+                        text: data.message,
+                        showConfirmButton: true,
+                        confirmButtonText: 'OK',
+                        confirmButtonColor: '#10b981',
+                    }).then(() => {
+                        // Reload page to reflect changes
+                        window.location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Gagal!',
+                        text: data.message || 'Terjadi kesalahan saat menyimpan data.',
+                        showConfirmButton: true,
+                        confirmButtonText: 'Coba Lagi',
+                        confirmButtonColor: '#ef4444',
+                    }).then(() => {
+                        // Show the modal again
+                        showUsernameSetupModal();
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Kesalahan!',
+                    text: 'Terjadi kesalahan saat mengirim data. Silakan coba lagi.',
+                    showConfirmButton: true,
+                    confirmButtonText: 'Coba Lagi',
+                    confirmButtonColor: '#ef4444',
+                }).then(() => {
+                    // Show the modal again
+                    showUsernameSetupModal();
+                });
+            });
+        }
     </script>
 </body>
 </html>

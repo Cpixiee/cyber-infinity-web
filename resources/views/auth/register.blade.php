@@ -84,6 +84,7 @@
                                 class="appearance-none relative block w-full px-3 py-2 border border-gray-700 placeholder-gray-500 text-gray-100 bg-gray-800/50 rounded-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
                                 placeholder="Minimal 8 karakter">
                         </div>
+                     
                     </div>
 
                     <!-- Konfirmasi Password -->
@@ -97,7 +98,7 @@
                     </div>
                 </div>
 
-                <div>
+                <div class="text-center">
                     <button type="submit" class="cyber-button" id="registerBtn">
                         <span id="registerBtnText">Daftar</span>
                         <i id="registerSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>

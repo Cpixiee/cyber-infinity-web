@@ -71,7 +71,7 @@ class ChallengeController extends Controller
     public function submitFlag(Request $request, Challenge $challenge, ChallengeTask $task)
     {
         $request->validate([
-            'flag' => 'required|string|max:255'
+            'flag' => 'required|string|max:255|regex:/^[a-zA-Z0-9_\-{}]+$/'
         ]);
         
         /** @var \App\Models\User $user */
@@ -85,7 +85,15 @@ class ChallengeController extends Controller
             return back()->with('error', 'Anda harus menyelesaikan task sebelumnya terlebih dahulu!');
         }
         
-        $submittedFlag = $request->flag;
+        // Rate limiting for flag submissions
+        $key = 'flag_attempts:' . $user->id . ':' . $task->id;
+        $attempts = cache()->get($key, 0);
+        
+        if ($attempts >= 10) { // Max 10 attempts per task per hour
+            return back()->with('error', 'Terlalu banyak percobaan. Silakan coba lagi dalam 1 jam.');
+        }
+
+        $submittedFlag = trim($request->flag);
         $isCorrect = $task->validateFlag($submittedFlag);
         
         // Create submission record
@@ -99,6 +107,9 @@ class ChallengeController extends Controller
         ]);
         
         if ($isCorrect) {
+            // Clear attempts on success
+            cache()->forget($key);
+            
             // Add points to user
             $user->points = ($user->points ?? 0) + $task->points;
             $user->save();
@@ -110,6 +121,9 @@ class ChallengeController extends Controller
             
             return back()->with('success', "✅ Benar! Flag diterima. (+{$task->points} poin)");
         }
+        
+        // Increment failed attempts (1 hour expiry)
+        cache()->put($key, $attempts + 1, 3600);
         
         return back()->with('error', '❌ Flag salah, coba lagi!');
     }
@@ -189,7 +203,7 @@ class ChallengeController extends Controller
             'tasks.*.points' => 'required|integer|min:0',
             'tasks.*.order' => 'required|integer|min:1',
             'tasks.*.external_link' => 'nullable|url',
-            'tasks.*.file' => 'nullable|file|max:102400', // 100MB in KB
+            'tasks.*.file' => 'nullable|file|max:51200|mimes:zip,rar,txt,pdf,jpg,jpeg,png,gif', // 50MB max, specific mime types
             'tasks.*.hints' => 'nullable|array',
             'tasks.*.hints.*.title' => 'required|string|max:255',
             'tasks.*.hints.*.content' => 'nullable|string',
@@ -226,8 +240,14 @@ class ChallengeController extends Controller
                     $fileName = $file->getClientOriginalName();
                     $fileSize = $file->getSize();
                     
+                    // Sanitize filename
+                    $fileName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $fileName);
+                    
+                    // Generate unique filename to prevent conflicts
+                    $uniqueName = time() . '_' . $fileName;
+                    
                     // Store file in storage/app/public/challenge-files
-                    $filePath = $file->store('challenge-files', 'public');
+                    $filePath = $file->storeAs('challenge-files', $uniqueName, 'public');
                 }
                 
                 $task = ChallengeTask::create([

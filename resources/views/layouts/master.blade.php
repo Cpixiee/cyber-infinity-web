@@ -270,12 +270,16 @@
         </footer>
     </div>
 
+    <!-- Unified CSS -->
+    <link rel="stylesheet" href="{{ asset('css/unified-cyber.css') }}">
+    
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="{{ asset('js/cyber-alerts.js') }}"></script>
+    <script src="{{ asset('js/matrix-unified.js') }}"></script>
+    <script src="{{ asset('js/unified-handlers.js') }}"></script>
     <script src="{{ asset('js/core.js') }}"></script>
     <script src="{{ asset('js/hacker-effects.js') }}"></script>
-    <script src="{{ asset('js/matrix-effect.js') }}"></script>
     
     <script>
         function toggleMobileMenu() {

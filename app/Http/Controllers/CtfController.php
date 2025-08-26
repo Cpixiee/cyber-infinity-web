@@ -118,6 +118,9 @@ class CtfController extends Controller
             ->where('status', 'correct')
             ->count();
         
+        // HAPUS DEMO DATA - Gunakan data asli dari database saja
+        // Jika tidak ada data, tampilkan empty state
+        
         return view('ctf.leaderboard', compact(
             'ctf', 
             'leaderboard', 
@@ -163,8 +166,15 @@ class CtfController extends Controller
             }
 
             if (!empty($userProgress)) {
+                // Add starting point at 0 for better visualization
+                $startPoint = [
+                    'date' => $ctf->start_time->format('Y-m-d H:i'),
+                    'points' => 0
+                ];
+                array_unshift($userProgress, $startPoint);
+                
                 $chartData[] = [
-                    'name' => $user->username,
+                    'name' => $user->username ?: $user->name,
                     'data' => $userProgress
                 ];
             }
@@ -201,7 +211,7 @@ class CtfController extends Controller
     public function submitFlag(Request $request, Ctf $ctf, CtfChallenge $challenge)
     {
         $request->validate([
-            'flag' => 'required|string|max:255'
+            'flag' => 'required|string|max:255|regex:/^[a-zA-Z0-9_\-{}]+$/'
         ]);
 
         /** @var \App\Models\User $user */
@@ -215,12 +225,31 @@ class CtfController extends Controller
             return response()->json(['success' => false, 'message' => 'CTF is not active']);
         }
 
+        // Check if user already solved this challenge
+        $alreadySolved = CtfSubmission::where('user_id', $user->id)
+            ->where('ctf_id', $ctf->id)
+            ->where('ctf_challenge_id', $challenge->id)
+            ->where('status', 'correct')
+            ->exists();
+
+        if ($alreadySolved) {
+            return response()->json(['success' => false, 'message' => 'You have already solved this challenge!']);
+        }
+
         // Check if user can attempt this challenge
         if (!$challenge->canUserAttempt($user)) {
             return response()->json(['success' => false, 'message' => 'Cannot attempt this challenge']);
         }
 
-        $submittedFlag = $request->flag;
+        // Rate limiting for CTF flag submissions
+        $key = 'ctf_attempts:' . $user->id . ':' . $challenge->id;
+        $attempts = cache()->get($key, 0);
+        
+        if ($attempts >= 5) { // Max 5 attempts per challenge per 10 minutes
+            return response()->json(['success' => false, 'message' => 'Too many attempts. Try again in 10 minutes.']);
+        }
+
+        $submittedFlag = trim($request->flag);
         $isCorrect = $challenge->validateFlag($submittedFlag);
 
         DB::transaction(function () use (&$user, $ctf, $challenge, $submittedFlag, $isCorrect) {
@@ -236,7 +265,7 @@ class CtfController extends Controller
             ]);
 
             if ($isCorrect) {
-                // Update user's CTF points
+                // Update user's CTF points (only if not already solved)
                 $user->ctf_points = ($user->ctf_points ?? 0) + $challenge->points;
                 $user->total_ctf_solves = ($user->total_ctf_solves ?? 0) + 1;
                 $user->save();
@@ -247,6 +276,9 @@ class CtfController extends Controller
         });
 
         if ($isCorrect) {
+            // Clear attempts on success
+            cache()->forget($key);
+            
             return response()->json([
                 'success' => true,
                 'message' => "🎉 Correct! Flag accepted. (+{$challenge->points} points)",
@@ -254,6 +286,9 @@ class CtfController extends Controller
                 'isFirstSolve' => $challenge->solve_count === 1
             ]);
         }
+
+        // Increment failed attempts (10 minutes expiry)
+        cache()->put($key, $attempts + 1, 600);
 
         return response()->json([
             'success' => false,
@@ -339,16 +374,40 @@ class CtfController extends Controller
 
     public function store(Request $request)
     {
+        // SERVER-SIDE DOUBLE SUBMISSION PROTECTION
+        $sessionKey = 'ctf_create_' . Auth::id();
+        $lastSubmission = session($sessionKey);
+        
+        // If submitted within last 3 seconds, block it
+        if ($lastSubmission && (time() - $lastSubmission) < 3) {
+            return redirect()->route('admin.ctf.index')
+                ->with('error', 'CTF sudah dibuat! Mohon jangan submit berulang kali.');
+        }
+        
+        // Store current submission time
+        session([$sessionKey => time()]);
+        
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'required|string',
             'banner_image' => 'nullable|image|max:10240', // 10MB
-            'start_time' => 'required|date|after:now',
+            'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',
             'status' => 'required|string|in:draft,active,inactive',
             'rules' => 'nullable|array',
             'max_participants' => 'nullable|integer|min:1',
         ]);
+
+        // Additional database-level check - prevent duplicate names within 5 minutes
+        $recentCtf = Ctf::where('name', $validated['name'])
+            ->where('created_by', Auth::id())
+            ->where('created_at', '>=', Carbon::now()->subMinutes(5))
+            ->first();
+            
+        if ($recentCtf) {
+            return redirect()->route('admin.ctf.index')
+                ->with('error', 'CTF dengan nama "' . $validated['name'] . '" baru saja dibuat!');
+        }
 
         DB::transaction(function () use ($validated, $request) {
             $validated['created_by'] = Auth::id();
@@ -362,8 +421,11 @@ class CtfController extends Controller
             Ctf::create($validated);
         });
 
+        // Clear session key after successful creation
+        session()->forget($sessionKey);
+
         return redirect()->route('admin.ctf.index')
-            ->with('success', 'CTF created successfully!');
+            ->with('success', 'CTF berhasil dibuat!');
     }
 
     public function edit(Ctf $ctf)
@@ -455,7 +517,7 @@ class CtfController extends Controller
             'flag' => 'required|string|max:255',
             'case_sensitive' => 'boolean',
             'status' => 'required|string|in:active,hidden,draft',
-            'files.*' => 'nullable|file|max:102400', // 100MB per file
+            'files.*' => 'nullable|file|max:51200|mimes:zip,rar,txt,pdf,jpg,jpeg,png,gif', // 50MB per file, specific types
             'hints' => 'nullable|array',
             'hints.*.title' => 'required|string|max:255',
             'hints.*.content' => 'required|string',
@@ -471,9 +533,16 @@ class CtfController extends Controller
             $files = [];
             if ($request->hasFile('files')) {
                 foreach ($request->file('files') as $file) {
-                    $path = $file->store('ctf-files', 'public');
+                    // Sanitize filename
+                    $originalName = $file->getClientOriginalName();
+                    $sanitizedName = preg_replace('/[^a-zA-Z0-9._-]/', '_', $originalName);
+                    
+                    // Generate unique filename
+                    $uniqueName = time() . '_' . $sanitizedName;
+                    
+                    $path = $file->storeAs('ctf-files', $uniqueName, 'public');
                     $files[] = [
-                        'name' => $file->getClientOriginalName(),
+                        'name' => $originalName,
                         'path' => $path,
                         'size' => $file->getSize(),
                         'type' => $file->getClientMimeType(),
