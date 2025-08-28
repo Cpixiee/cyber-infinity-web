@@ -102,6 +102,12 @@ class ProfileController extends Controller
                 ], 422);
             }
 
+            // Ensure avatars directory exists
+            $avatarsDir = storage_path('app/public/avatars');
+            if (!file_exists($avatarsDir)) {
+                mkdir($avatarsDir, 0755, true);
+            }
+
             // Delete old avatar if exists
             if ($user->avatar && Storage::disk('public')->exists($user->avatar)) {
                 Storage::disk('public')->delete($user->avatar);
@@ -132,14 +138,17 @@ class ProfileController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'success' => false,
-                'message' => 'Validasi gagal.',
+                'message' => 'Validasi gagal: ' . implode(', ', collect($e->errors())->flatten()->toArray()),
                 'errors' => $e->errors()
             ], 422);
         } catch (\Exception $e) {
-            Log::error('Avatar upload error: ' . $e->getMessage());
+            Log::error('Avatar upload error: ' . $e->getMessage(), [
+                'user_id' => Auth::id(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return response()->json([
                 'success' => false,
-                'message' => 'Terjadi kesalahan saat mengupload avatar. ' . $e->getMessage()
+                'message' => 'Terjadi kesalahan saat mengupload avatar: ' . $e->getMessage()
             ], 500);
         }
     }

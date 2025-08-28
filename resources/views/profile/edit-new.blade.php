@@ -33,9 +33,9 @@
         @include('layouts.sidebar')
 
         <!-- Main content -->
-        <div class="flex-1 lg:ml-0">
+        <div class="flex-1 lg:ml-0 flex flex-col min-h-screen">
             <!-- Mobile header -->
-            <div class="lg:hidden bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center justify-between">
+            <div class="lg:hidden bg-gray-800 border-b border-gray-700 px-4 py-3 flex items-center justify-between flex-shrink-0">
                 <button id="mobile-menu-btn" class="text-gray-400 hover:text-white">
                     <i class="fas fa-bars text-xl"></i>
                 </button>
@@ -44,7 +44,7 @@
             </div>
 
             <!-- Page header -->
-            <header class="bg-gray-800 border-b border-gray-700">
+            <header class="bg-gray-800 border-b border-gray-700 flex-shrink-0">
                 <div class="px-6 py-4">
                     <div class="flex items-center justify-between">
                         <div>
@@ -65,7 +65,7 @@
             </header>
 
             <!-- Main content -->
-            <main class="flex-1 p-6">
+            <main class="flex-1 p-6 overflow-y-auto">
                 <div class="max-w-4xl mx-auto">
                     <!-- Profile Tabs -->
                     <div x-data="{ activeTab: 'profile' }" class="space-y-6">
@@ -213,8 +213,14 @@
                             <div class="text-center">
                                 <!-- Current Avatar -->
                                 <div class="mb-6">
-                                    <img id="currentAvatar" src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://via.placeholder.com/120x120/374151/ffffff?text=' . substr(auth()->user()->name, 0, 1) }}" 
-                                         alt="Profile Avatar" class="w-32 h-32 rounded-full mx-auto border-4 border-green-400 object-cover">
+                                    @if(auth()->user()->avatar)
+                                        <img id="currentAvatar" src="{{ asset('storage/' . auth()->user()->avatar) }}" 
+                                             alt="Profile Avatar" class="w-32 h-32 rounded-full mx-auto border-4 border-green-400 object-cover">
+                                    @else
+                                        <div id="currentAvatar" class="w-32 h-32 rounded-full mx-auto border-4 border-green-400 bg-gradient-to-r from-green-500 to-blue-500 flex items-center justify-center">
+                                            <span class="text-white text-4xl font-bold">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</span>
+                                        </div>
+                                    @endif
                                     <p class="text-gray-400 text-sm mt-2">Avatar saat ini</p>
                                 </div>
 
@@ -430,51 +436,116 @@
                     croppr.destroy();
                 }
                 
-                croppr = new Croppr(cropImage, {
-                    aspectRatio: 1,
-                    startSize: [80, 80, '%']
-                });
+                // Wait for image to load before initializing croppr
+                cropImage.onload = function() {
+                    croppr = new Croppr(cropImage, {
+                        aspectRatio: 1,
+                        startSize: [80, 80, '%']
+                    });
+                };
             };
             reader.readAsDataURL(file);
         }
 
         // Crop and save avatar
         function cropAndSave() {
-            if (!croppr) return;
+            if (!croppr) {
+                showErrorToast('Error', 'Crop tool tidak tersedia. Silakan upload ulang gambar.');
+                return;
+            }
             
-            const canvas = croppr.getCroppedCanvas({
-                width: 300,
-                height: 300
-            });
+            // Check if croppr has the required method
+            if (typeof croppr.getCroppedCanvas !== 'function') {
+                showErrorToast('Error', 'Crop tool belum siap. Silakan tunggu sebentar dan coba lagi.');
+                return;
+            }
             
-            canvas.toBlob(function(blob) {
-                const formData = new FormData();
-                formData.append('avatar', blob, 'avatar.jpg');
-                formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+            try {
+                const canvas = croppr.getCroppedCanvas({
+                    width: 300,
+                    height: 300
+                });
+                
+                if (!canvas) {
+                    showErrorToast('Error', 'Gagal memproses gambar. Silakan coba lagi.');
+                    return;
+                }
                 
                 showLoadingDialog('Mengupload avatar...', 'Mohon tunggu sebentar');
-                
-                fetch('{{ route("profile.avatar") }}', {
-                    method: 'POST',
-                    body: formData
-                })
-                .then(response => response.json())
-                .then(data => {
-                    Swal.close();
-                    
-                    if (data.success) {
-                        document.getElementById('currentAvatar').src = data.avatar_url;
-                        showSuccessToast('Avatar berhasil diperbarui!');
-                        cancelCrop();
-                    } else {
-                        showErrorToast('Gagal mengupload avatar', data.message);
+                        
+                        canvas.toBlob(function(blob) {
+                            if (!blob) {
+                                Swal.close();
+                                showErrorToast('Error', 'Gagal memproses gambar. Silakan coba lagi.');
+                                return;
+                            }
+                            
+                            const formData = new FormData();
+                            formData.append('avatar', blob, 'avatar.jpg');
+                            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+                            
+                            fetch('{{ route("profile.avatar") }}', {
+                                method: 'POST',
+                                body: formData,
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest'
+                                }
+                            })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Network response was not ok');
+                                }
+                                return response.json();
+                            })
+                            .then(data => {
+                                Swal.close();
+                                
+                                if (data.success) {
+                                    // Update avatar image with cache busting
+                                    const avatarUrl = data.avatar_url + '?t=' + new Date().getTime();
+                                    const currentAvatar = document.getElementById('currentAvatar');
+                                    
+                                    // Replace div placeholder with img element if needed
+                                    if (currentAvatar.tagName === 'DIV') {
+                                        const imgElement = document.createElement('img');
+                                        imgElement.id = 'currentAvatar';
+                                        imgElement.src = avatarUrl;
+                                        imgElement.alt = 'Profile Avatar';
+                                        imgElement.className = 'w-32 h-32 rounded-full mx-auto border-4 border-green-400 object-cover';
+                                        currentAvatar.parentNode.replaceChild(imgElement, currentAvatar);
+                                    } else {
+                                        currentAvatar.src = avatarUrl;
+                                    }
+                                    
+                                    showSuccessToast('Avatar berhasil diperbarui!');
+                                    cancelCrop();
+                                    
+                                    // Update sidebar avatar if exists
+                                    const sidebarAvatar = document.querySelector('.sidebar-avatar, .nav-avatar');
+                                    if (sidebarAvatar) {
+                                        sidebarAvatar.src = avatarUrl;
+                                    }
+                                } else {
+                                    showErrorToast('Gagal mengupload avatar', data.message || 'Terjadi kesalahan');
+                                }
+                            })
+                            .catch(error => {
+                                Swal.close();
+                                console.error('Upload error:', error);
+                                showErrorToast('Terjadi kesalahan', 'Gagal mengupload avatar. Silakan coba lagi.');
+                            });
+                        }, 'image/jpeg', 0.9);
+                        
+                    } catch (innerError) {
+                        console.error('Inner crop error:', innerError);
+                        showErrorToast('Error', 'Gagal memproses gambar. Silakan coba lagi.');
                     }
-                })
-                .catch(error => {
-                    Swal.close();
-                    showErrorToast('Terjadi kesalahan', 'Silakan coba lagi');
-                });
-            }, 'image/jpeg', 0.9);
+                }, 100); // Small delay to ensure croppr is ready
+                
+            } catch (error) {
+                console.error('Crop error:', error);
+                showErrorToast('Error', 'Gagal memproses gambar. Silakan coba lagi.');
+            }
         }
 
         // Cancel crop

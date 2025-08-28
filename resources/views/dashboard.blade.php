@@ -19,15 +19,25 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    <!-- Check if user needs username setup and show popup -->
-    @if(auth()->user()->needsUsernameSetup())
     <script>
+        // Set global routes for JavaScript
+        window.usernameSetupRoute = "{{ route('profile.setup-username') }}";
+        
+        // Set chart data for JavaScript
+        window.chartData = {
+            registration: {
+                labels: @json($dailyLabels),
+                values: @json($dailyValues)
+            },
+            performance: {{ $performancePercentage }}
+        };
+        
+        @if(auth()->user()->needsUsernameSetup())
         document.addEventListener('DOMContentLoaded', function() {
-            // Show username setup popup
             showUsernameSetupModal();
         });
+        @endif
     </script>
-    @endif
     
     <!-- Chart.js - try multiple CDNs for reliability -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" 
@@ -36,35 +46,13 @@
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     
-    <!-- Custom CSS for responsive sidebar -->
-    <style>
-        /* DESKTOP: Hide all mobile elements and show sidebar */
-        @media (min-width: 1024px) {
-            #mobile-menu-btn, 
-            #mobile-close-btn, 
-            #mobile-overlay {
-                display: none !important;
-            }
-            
-            #sidebar {
-                position: static !important;
-                transform: translateX(0) !important;
-                transition: none !important;
-                left: 0 !important;
-            }
-        }
-        
-        /* MOBILE: Sidebar hidden by default */
-        @media (max-width: 1023px) {
-            #sidebar {
-                transform: translateX(-100%) !important;
-            }
-            
-            #sidebar.mobile-open {
-                transform: translateX(0) !important;
-            }
-        }
-    </style>
+    <!-- External CSS -->
+    <link rel="stylesheet" href="{{ asset('css/responsive-layout.css') }}">
+    
+    <!-- External JavaScript -->
+    <script src="{{ asset('js/mobile-navigation.js') }}"></script>
+    <script src="{{ asset('js/dashboard-charts.js') }}"></script>
+    <script src="{{ asset('js/username-setup.js') }}"></script>
 
 </head>
 <body class="bg-white">
@@ -170,9 +158,14 @@
                 <!-- User Profile & Logout -->
                 <div class="border-t border-gray-200 p-4">
                     <div class="flex items-center mb-3">
-                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-gray-600 text-sm"></i>
-                        </div>
+                        @if(auth()->user()->avatar)
+                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" 
+                                 class="w-8 h-8 rounded-full object-cover sidebar-avatar">
+                        @else
+                            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-gray-600 text-sm"></i>
+                            </div>
+                        @endif
                         <div class="ml-3">
                             <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
                             <p class="text-xs text-gray-500">{{ ucfirst(auth()->user()->role) }}</p>
@@ -533,7 +526,7 @@
     </div>
 
     <script>
-        // Function to initialize charts with limited retries
+        // Simple logout confirmation
         let chartRetryCount = 0;
         const maxRetries = 10;
         

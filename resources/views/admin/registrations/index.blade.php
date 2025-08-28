@@ -160,9 +160,14 @@
                 <!-- User Profile & Logout -->
                 <div class="border-t border-gray-200 p-4">
                     <div class="flex items-center mb-3">
-                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-gray-600 text-sm"></i>
-                        </div>
+                        @if(auth()->user()->avatar)
+                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" 
+                                 class="w-8 h-8 rounded-full object-cover sidebar-avatar">
+                        @else
+                            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-gray-600 text-sm"></i>
+                            </div>
+                        @endif
                         <div class="ml-3">
                             <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
                             <p class="text-xs text-gray-500">{{ ucfirst(auth()->user()->role) }}</p>
