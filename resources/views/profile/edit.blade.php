@@ -1,160 +1,272 @@
-@extends('layouts.master')
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>Profile Settings - Cyber Infinity</title>
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
+    
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    
+    <!-- Croppr.js for image cropping -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/croppr@2.3.1/dist/croppr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/croppr@2.3.1/dist/croppr.min.js"></script>
+    
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    
+    <!-- Fix responsive issues -->
+    <style>
+        /* DESKTOP: Hide all mobile elements and show sidebar */
+        @media (min-width: 1024px) {
+            #mobile-menu-btn, 
+            #mobile-close-btn, 
+            #mobile-overlay {
+                display: none !important;
+            }
+            
+            #sidebar {
+                position: fixed !important;
+                transform: translateX(0) !important;
+                transition: none !important;
+            }
+        }
+        
+        /* MOBILE: Sidebar hidden by default */
+        @media (max-width: 1023px) {
+            #sidebar {
+                transform: translateX(-100%) !important;
+            }
+            
+            #sidebar.mobile-open {
+                transform: translateX(0) !important;
+            }
+        }
+    </style>
+</head>
 
-@section('title', 'Profile Settings - Cyber Infinity')
+<body class="bg-white">
+    <!-- Mobile Menu Button -->
+    <button id="mobile-menu-btn" class="block lg:!hidden fixed top-4 left-4 z-[60] p-2 bg-white rounded-lg shadow-md border border-gray-200">
+        <i class="fas fa-bars text-gray-600"></i>
+    </button>
 
-@section('header', 'Profile Settings')
+    <!-- Mobile Overlay -->
+    <div id="mobile-overlay" class="block lg:!hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
 
-@section('content')
-<div class="min-h-screen bg-gray-50" style="margin-top: 20px; margin-bottom: 20px;">
-    <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-gray-200">
-        <div class="px-6 py-4">
-            <div class="flex items-center justify-between">
-                <div>
-                    <h1 class="text-2xl font-bold text-gray-900 flex items-center">
-                        <i class="fas fa-user-cog mr-3 text-blue-600"></i>
-                        Profile Settings
-                    </h1>
-                    <p class="text-gray-600 mt-1">Kelola informasi akun dan pengaturan keamanan</p>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <p class="text-sm text-gray-500">Poin Lab</p>
-                        <p class="text-lg font-bold text-blue-600">{{ auth()->user()->points ?? 0 }}</p>
-                    </div>
-                    <div class="text-right">
-                        <p class="text-sm text-gray-500">Poin CTF</p>
-                        <p class="text-lg font-bold text-purple-600">{{ auth()->user()->ctf_points ?? 0 }}</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
+    <div class="flex min-h-screen bg-white">
+        <!-- Include Sidebar -->
+        @include('layouts.sidebar')
 
-    <!-- Main Content -->
-    <main class="flex-1 p-6">
-        <div class="max-w-4xl mx-auto">
-
-        <!-- Profile Tabs -->
-        <div x-data="{ activeTab: 'profile' }" class="space-y-8">
-            <!-- Tab Navigation -->
-            <div class="flex flex-wrap justify-center gap-2">
-                <button @click="activeTab = 'profile'" 
-                        :class="{ 'bg-blue-600 text-white': activeTab === 'profile', 'bg-white text-gray-700 border-gray-300': activeTab !== 'profile' }" 
-                        class="px-4 py-2 border rounded-lg font-medium transition-all duration-200 hover:bg-blue-50">
-                    <i class="fas fa-user mr-2"></i>Profile Info
-                </button>
-                <button @click="activeTab = 'security'" 
-                        :class="{ 'bg-blue-600 text-white': activeTab === 'security', 'bg-white text-gray-700 border-gray-300': activeTab !== 'security' }" 
-                        class="px-4 py-2 border rounded-lg font-medium transition-all duration-200 hover:bg-blue-50">
-                    <i class="fas fa-shield-alt mr-2"></i>Security
-                </button>
-                <button @click="activeTab = 'avatar'" 
-                        :class="{ 'bg-blue-600 text-white': activeTab === 'avatar', 'bg-white text-gray-700 border-gray-300': activeTab !== 'avatar' }" 
-                        class="px-4 py-2 border rounded-lg font-medium transition-all duration-200 hover:bg-blue-50">
-                    <i class="fas fa-camera mr-2"></i>Avatar
-                </button>
-            </div>
-
-            <!-- Profile Info Tab -->
-            <div x-show="activeTab === 'profile'" x-transition class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div class="flex items-center mb-6">
-                    <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-user-edit text-blue-600 text-xl"></i>
-                    </div>
-                    <h2 class="text-xl font-bold text-gray-900">Informasi Profile</h2>
-                </div>
-
-                <form id="profileForm" onsubmit="return handleProfileSubmit(event)">
-                    @csrf
-                    @method('PATCH')
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Name -->
+        <!-- Main Content -->
+        <div class="flex-1 lg:ml-64">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200">
+                <div class="px-6 py-4">
+                    <div class="flex items-center justify-between">
                         <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-user mr-2 text-blue-600"></i>Nama Lengkap
-                            </label>
-                            <input type="text" name="name" id="name" value="{{ old('name', auth()->user()->name) }}" required
-                                class="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
-                                placeholder="Masukkan nama lengkap">
+                            <h1 class="text-2xl font-bold text-gray-900">Profile Settings</h1>
+                            <p class="text-sm text-gray-600">Kelola informasi akun dan pengaturan keamanan</p>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Poin Lab</p>
+                                <p class="text-lg font-bold text-blue-600">{{ auth()->user()->points ?? 0 }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-500">Poin CTF</p>
+                                <p class="text-lg font-bold text-purple-600">{{ auth()->user()->ctf_points ?? 0 }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Profile Content -->
+            <main class="flex-1 p-6 bg-white">
+                <!-- Profile Stats Cards -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-xl bg-blue-50">
+                                <i class="fas fa-user text-blue-600 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Nama Lengkap</p>
+                                <p class="text-2xl font-bold text-gray-900">{{ auth()->user()->name }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-xl bg-green-50">
+                                <i class="fas fa-at text-green-600 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Username</p>
+                                <p class="text-2xl font-bold text-gray-900">{{ auth()->user()->username ?? 'Belum diset' }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div class="flex items-center">
+                            <div class="p-3 rounded-xl bg-purple-50">
+                                <i class="fas fa-calendar text-purple-600 text-xl"></i>
+                            </div>
+                            <div class="ml-4">
+                                <p class="text-sm font-medium text-gray-600">Member Since</p>
+                                <p class="text-2xl font-bold text-gray-900">{{ auth()->user()->created_at->format('M Y') }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile Tabs -->
+                <div x-data="{ activeTab: 'profile' }" class="space-y-6">
+                    <!-- Tab Navigation -->
+                    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-1">
+                        <div class="flex flex-wrap gap-1">
+                            <button @click="activeTab = 'profile'" 
+                                    :class="{ 'bg-blue-600 text-white': activeTab === 'profile', 'text-gray-600 hover:text-gray-900': activeTab !== 'profile' }" 
+                                    class="flex-1 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200">
+                                <i class="fas fa-user mr-2"></i>Profile Info
+                            </button>
+                            <button @click="activeTab = 'security'" 
+                                    :class="{ 'bg-blue-600 text-white': activeTab === 'security', 'text-gray-600 hover:text-gray-900': activeTab !== 'security' }" 
+                                    class="flex-1 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200">
+                                <i class="fas fa-shield-alt mr-2"></i>Security
+                            </button>
+                            <button @click="activeTab = 'avatar'" 
+                                    :class="{ 'bg-blue-600 text-white': activeTab === 'avatar', 'text-gray-600 hover:text-gray-900': activeTab !== 'avatar' }" 
+                                    class="flex-1 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200">
+                                <i class="fas fa-camera mr-2"></i>Avatar
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Profile Info Tab -->
+                    <div x-show="activeTab === 'profile'" x-transition class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-xl bg-blue-50 mr-4">
+                                    <i class="fas fa-user-edit text-blue-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-lg font-semibold text-gray-900">Informasi Profile</h2>
+                                    <p class="text-sm text-gray-600 mt-1">Update informasi personal dan preferensi akun</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="p-6">
+                            <form id="profileForm" onsubmit="return handleProfileSubmit(event)">
+                                @csrf
+                                @method('PATCH')
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Name -->
+                                    <div>
+                                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fas fa-user mr-2 text-blue-600"></i>Nama Lengkap
+                                        </label>
+                                        <input type="text" name="name" id="name" value="{{ old('name', auth()->user()->name) }}" required
+                                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
+                                            placeholder="Masukkan nama lengkap">
+                                    </div>
+
+                                    <!-- Username -->
+                                    <div>
+                                        <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fas fa-at mr-2 text-purple-600"></i>Username
+                                        </label>
+                                        <input type="text" name="username" id="username" value="{{ old('username', auth()->user()->username ?? '') }}"
+                                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors duration-200"
+                                            placeholder="Pilih username unik">
+                                        <p class="text-xs text-gray-500 mt-1">Username akan digunakan untuk login dan profil publik</p>
+                                    </div>
+                                </div>
+
+                                <div class="mt-8 flex flex-col sm:flex-row gap-3">
+                                    <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors duration-200" id="profileBtn">
+                                        <span id="profileBtnText">
+                                            <i class="fas fa-save mr-2"></i>Simpan Perubahan
+                                        </span>
+                                        <i id="profileSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
+                                    </button>
+                                    <button type="button" onclick="resetForm()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
+                                        <i class="fas fa-undo mr-2"></i>Reset
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Security Tab -->
+                    <div x-show="activeTab === 'security'" x-transition class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-xl bg-red-50 mr-4">
+                                    <i class="fas fa-shield-alt text-red-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-lg font-semibold text-gray-900">Keamanan Akun</h2>
+                                    <p class="text-sm text-gray-600 mt-1">Jaga keamanan akun dengan password yang kuat</p>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Username -->
-                        <div>
-                            <label for="username" class="block text-sm font-medium text-gray-700 mb-2">
-                                <i class="fas fa-at mr-2 text-purple-600"></i>Username
-                            </label>
-                            <input type="text" name="username" id="username" value="{{ old('username', auth()->user()->username ?? '') }}"
-                                class="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors duration-200"
-                                placeholder="Pilih username unik">
-                            <p class="text-xs text-gray-500 mt-1">Username akan digunakan untuk login dan profil publik</p>
-                        </div>
-
-
-                    </div>
-
-                    <div class="mt-8 flex flex-col sm:flex-row gap-3">
-                        <button type="submit" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors duration-200" id="profileBtn">
-                            <span id="profileBtnText">
-                                <i class="fas fa-save mr-2"></i>Simpan Perubahan
-                            </span>
-                            <i id="profileSpinner" class="fas fa-spinner fa-spin ml-2 hidden"></i>
-                        </button>
-                        <button type="button" onclick="resetForm()" class="flex-1 bg-gray-600 hover:bg-gray-700 text-white px-6 py-3 rounded-lg font-medium transition-colors duration-200">
-                            <i class="fas fa-undo mr-2"></i>Reset
-                        </button>
-                    </div>
-                </form>
-            </div>
-
-            <!-- Security Tab -->
-            <div x-show="activeTab === 'security'" x-transition class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div class="flex items-center mb-6">
-                    <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-shield-alt text-red-600 text-xl"></i>
-                    </div>
-                    <h2 class="text-xl font-bold text-gray-900">Keamanan Akun</h2>
-                </div>
-
+                        <div class="p-6">
                             <form id="passwordForm" onsubmit="return handlePasswordSubmit(event)">
                                 @csrf
                                 
                                 <div class="space-y-6">
                                     <!-- Current Password -->
                                     <div>
-                                        <label for="current_password" class="block text-sm font-medium text-gray-300 mb-2">
-                                            <i class="fas fa-lock mr-2 text-red-400"></i>Password Saat Ini
+                                        <label for="current_password" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fas fa-lock mr-2 text-red-600"></i>Password Saat Ini
                                         </label>
                                         <input type="password" name="current_password" id="current_password" required
-                                            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500 transition-colors duration-200"
+                                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent transition-colors duration-200"
                                             placeholder="Masukkan password saat ini">
                                     </div>
 
                                     <!-- New Password -->
                                     <div>
-                                        <label for="new_password" class="block text-sm font-medium text-gray-300 mb-2">
-                                            <i class="fas fa-key mr-2 text-green-400"></i>Password Baru
+                                        <label for="new_password" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fas fa-key mr-2 text-green-600"></i>Password Baru
                                         </label>
                                         <input type="password" name="new_password" id="new_password" required
-                                            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500 transition-colors duration-200"
+                                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-colors duration-200"
                                             placeholder="Minimal 8 karakter">
                                         <div id="passwordStrength" class="mt-2 text-xs"></div>
                                     </div>
 
                                     <!-- Confirm Password -->
                                     <div>
-                                        <label for="new_password_confirmation" class="block text-sm font-medium text-gray-300 mb-2">
-                                            <i class="fas fa-check mr-2 text-blue-400"></i>Konfirmasi Password Baru
+                                        <label for="new_password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">
+                                            <i class="fas fa-check mr-2 text-blue-600"></i>Konfirmasi Password Baru
                                         </label>
                                         <input type="password" name="new_password_confirmation" id="new_password_confirmation" required
-                                            class="w-full px-4 py-3 bg-gray-700 border border-gray-600 text-white rounded-lg focus:outline-none focus:border-green-500 transition-colors duration-200"
+                                            class="w-full px-4 py-3 bg-gray-50 border border-gray-300 text-gray-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors duration-200"
                                             placeholder="Masukkan ulang password baru">
                                     </div>
                                 </div>
 
                                 <div class="mt-8">
-                                    <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg font-bold transition-colors duration-200" id="passwordBtn">
+                                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-lg font-bold transition-colors duration-200" id="passwordBtn">
                                         <span id="passwordBtnText">
                                             <i class="fas fa-shield-alt mr-2"></i>Update Password
                                         </span>
@@ -163,63 +275,65 @@
                                 </div>
                             </form>
                         </div>
-
-            <!-- Avatar Tab -->
-            <div x-show="activeTab === 'avatar'" x-transition class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div class="flex items-center mb-6">
-                    <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
-                        <i class="fas fa-camera text-purple-600 text-xl"></i>
                     </div>
-                    <h2 class="text-xl font-bold text-gray-900">Foto Profile</h2>
-                </div>
 
+                    <!-- Avatar Tab -->
+                    <div x-show="activeTab === 'avatar'" x-transition class="bg-white rounded-xl shadow-sm border border-gray-100">
+                        <div class="p-6 border-b border-gray-100">
+                            <div class="flex items-center">
+                                <div class="p-3 rounded-xl bg-purple-50 mr-4">
+                                    <i class="fas fa-camera text-purple-600 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-lg font-semibold text-gray-900">Foto Profile</h2>
+                                    <p class="text-sm text-gray-600 mt-1">Upload dan atur foto profil Anda</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
                             <div class="text-center">
                                 <!-- Current Avatar -->
                                 <div class="mb-6">
                                     <img id="currentAvatar" src="{{ auth()->user()->avatar ? asset('storage/' . auth()->user()->avatar) : 'https://via.placeholder.com/120x120/374151/ffffff?text=' . substr(auth()->user()->name, 0, 1) }}" 
-                                         alt="Profile Avatar" class="w-32 h-32 rounded-full mx-auto border-4 border-green-400 object-cover">
-                                    <p class="text-gray-400 text-sm mt-2">Avatar saat ini</p>
+                                         alt="Profile Avatar" class="w-32 h-32 rounded-full mx-auto border-4 border-blue-100 object-cover">
+                                    <p class="text-gray-600 text-sm mt-2">Avatar saat ini</p>
                                 </div>
 
                                 <!-- Upload Section -->
                                 <div class="mb-6">
                                     <input type="file" id="avatarInput" accept="image/*" class="hidden" onchange="handleAvatarUpload(event)">
-                                    <button type="button" onclick="document.getElementById('avatarInput').click()" class="bg-green-500 hover:bg-green-600 text-black px-6 py-3 rounded-lg font-bold transition-colors duration-200">
+                                    <button type="button" onclick="document.getElementById('avatarInput').click()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg font-bold transition-colors duration-200">
                                         <i class="fas fa-upload mr-2"></i>Pilih Foto Baru
                                     </button>
-                                    <p class="text-xs text-gray-400 mt-2">Format: JPG, PNG. Maksimal 5MB</p>
+                                    <p class="text-xs text-gray-500 mt-2">Format: JPG, PNG. Maksimal 5MB</p>
                                 </div>
 
                                 <!-- Crop Section (Hidden by default) -->
                                 <div id="cropSection" class="hidden">
-                                    <div class="max-w-md mx-auto mb-4">
+                                    <div class="max-w-md mx-auto mb-4 bg-white rounded-xl shadow-sm border border-gray-100 p-4">
                                         <img id="cropImage" style="max-width: 100%;">
                                     </div>
                                     <div class="flex gap-3 justify-center">
-                                        <button type="button" onclick="cropAndSave()" class="bg-green-500 hover:bg-green-600 text-black px-4 py-2 rounded-lg font-medium transition-colors duration-200">
+                                        <button type="button" onclick="cropAndSave()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
                                             <i class="fas fa-check mr-2"></i>Crop & Simpan
                                         </button>
                                         <button type="button" onclick="cancelCrop()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200">
                                             <i class="fas fa-times mr-2"></i>Batal
                                         </button>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </div>
+            </main>
         </div>
     </div>
-</div>
 
-
-
-
-
-<!-- Scripts -->
-<script src="{{ asset('js/cyber-alerts.js') }}"></script>
-    
+    <!-- Scripts -->
     <script>
         let croppr;
-        let newEmail = '';
 
         // Mobile menu toggle
         document.getElementById('mobile-menu-btn')?.addEventListener('click', function() {
@@ -452,12 +566,110 @@
             }
         }
 
-
-
         // Reset form
         function resetForm() {
             document.getElementById('profileForm').reset();
             showInfoToast('Form telah direset');
+        }
+
+        // Utility functions
+        function setButtonLoading(buttonId, loading, text = '') {
+            const button = document.getElementById(buttonId);
+            const buttonText = document.getElementById(buttonId + 'Text');
+            const spinner = document.getElementById(buttonId + 'Spinner');
+            
+            if (loading) {
+                button.disabled = true;
+                if (text) buttonText.textContent = text;
+                spinner?.classList.remove('hidden');
+            } else {
+                button.disabled = false;
+                spinner?.classList.add('hidden');
+            }
+        }
+
+        function validateFormFields(formId) {
+            const form = document.getElementById(formId);
+            const requiredFields = form.querySelectorAll('[required]');
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    field.style.borderColor = '#ef4444';
+                    isValid = false;
+                } else {
+                    field.style.borderColor = '#d1d5db';
+                }
+            });
+            
+            return isValid;
+        }
+
+        function getPasswordStrength(password) {
+            let score = 0;
+            if (password.length >= 8) score++;
+            if (/[a-z]/.test(password)) score++;
+            if (/[A-Z]/.test(password)) score++;
+            if (/[0-9]/.test(password)) score++;
+            if (/[^A-Za-z0-9]/.test(password)) score++;
+            return score;
+        }
+
+        function showPasswordStrength(strength) {
+            const strengths = ['Sangat Lemah', 'Lemah', 'Sedang', 'Kuat', 'Sangat Kuat'];
+            const colors = ['#ef4444', '#f59e0b', '#eab308', '#22c55e', '#10b981'];
+            
+            return {
+                text: strengths[strength] || 'Sangat Lemah',
+                color: colors[strength] || '#ef4444'
+            };
+        }
+
+        // Toast notification functions
+        function showSuccessToast(message) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil!',
+                text: message,
+                showConfirmButton: false,
+                timer: 3000,
+                toast: true,
+                position: 'top-end'
+            });
+        }
+
+        function showErrorToast(title, message) {
+            Swal.fire({
+                icon: 'error',
+                title: title,
+                text: message,
+                confirmButtonColor: '#ef4444'
+            });
+        }
+
+        function showInfoToast(message) {
+            Swal.fire({
+                icon: 'info',
+                title: 'Info',
+                text: message,
+                showConfirmButton: false,
+                timer: 2000,
+                toast: true,
+                position: 'top-end'
+            });
+        }
+
+        function showLoadingDialog(title, text) {
+            Swal.fire({
+                title: title,
+                text: text,
+                allowOutsideClick: false,
+                allowEscapeKey: false,
+                showConfirmButton: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
         }
 
         // Show flash messages
@@ -467,12 +679,85 @@
             @endif
 
             @if(session('error'))
-                showErrorToast("{{ session('error') }}");
+                showErrorToast("Error", "{{ session('error') }}");
             @endif
 
             @if($errors->any())
-                showValidationErrors(@json($errors->all()));
+                showErrorToast("Validation Error", @json($errors->all()).join('\n'));
             @endif
         });
+
+        // ===== RESPONSIVE SIDEBAR FUNCTIONS =====
+        
+        function initializeResponsiveSidebar() {
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const mobileCloseBtn = document.getElementById('mobile-close-btn');
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            function isMobile() {
+                return window.innerWidth < 1024;
+            }
+            
+            function setupSidebarState() {
+                if (isMobile()) {
+                    sidebar?.classList.remove('mobile-open');
+                    overlay?.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                } else {
+                    sidebar?.classList.remove('mobile-open');
+                    overlay?.classList.add('hidden');
+                    document.body.classList.remove('overflow-hidden');
+                }
+            }
+            
+            function openMobileMenu() {
+                if (!isMobile()) return;
+                sidebar?.classList.add('mobile-open');
+                overlay?.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            }
+            
+            function closeMobileMenu() {
+                if (!isMobile()) return;
+                sidebar?.classList.remove('mobile-open');
+                overlay?.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+            
+            mobileMenuBtn?.addEventListener('click', function(e) {
+                if (!isMobile()) return;
+                e.preventDefault();
+                openMobileMenu();
+            });
+            
+            mobileCloseBtn?.addEventListener('click', function(e) {
+                if (!isMobile()) return;
+                e.preventDefault();
+                closeMobileMenu();
+            });
+            
+            overlay?.addEventListener('click', function() {
+                if (!isMobile()) return;
+                closeMobileMenu();
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (!isMobile()) return;
+                if (e.key === 'Escape') {
+                    closeMobileMenu();
+                }
+            });
+            
+            window.addEventListener('resize', setupSidebarState);
+            setupSidebarState();
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeResponsiveSidebar);
+        } else {
+            initializeResponsiveSidebar();
+        }
     </script>
-@endsection
+</body>
+</html>
