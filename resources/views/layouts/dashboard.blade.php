@@ -7,39 +7,23 @@
     <title>@yield('title', 'Dashboard - Cyber Infinity')</title>
     
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Vite Assets -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     
     <style>
         /* Reset & Base Styles */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Share Tech Mono', monospace;
-            background-color: #0a0a0a;
-            color: #00ff00;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
             line-height: 1.6;
             min-height: 100vh;
-        }
-
-        /* Grid Background Effect */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
-            background-size: 20px 20px;
-            pointer-events: none;
-            animation: gridMove 20s linear infinite;
-            z-index: -1;
-        }
-
-        @keyframes gridMove {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(20px); }
         }
 
         /* Layout */
@@ -52,10 +36,10 @@
 
         /* Navigation */
         .navbar {
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: #ffffff;
             padding: 1rem 0;
-            border-bottom: 1px solid #00ff00;
-            box-shadow: 0 2px 10px rgba(0, 255, 0, 0.1);
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
         }
 
         .nav-content {
@@ -65,10 +49,10 @@
         }
 
         .nav-brand {
-            color: #fff;
+            color: #1e293b;
             font-size: 1.5rem;
             text-decoration: none;
-            font-weight: bold;
+            font-weight: 600;
         }
 
         .nav-links {
@@ -77,34 +61,38 @@
         }
 
         .nav-link {
-            color: #fff;
+            color: #64748b;
             text-decoration: none;
             padding: 0.5rem 1rem;
+            border-radius: 6px;
+            transition: all 0.2s ease;
         }
 
         .nav-link:hover {
-            background-color: #3d3d3d;
-            border-radius: 4px;
+            background-color: #f1f5f9;
+            color: #1e293b;
         }
 
         /* Content Area */
         .content-area {
-            padding: 2rem 0;
+            padding: 0;
+            background-color: #f8fafc;
+            min-height: calc(100vh - 140px);
         }
 
         .page-title {
             font-size: 2rem;
             margin-bottom: 2rem;
-            color: #fff;
+            color: #1e293b;
         }
 
         /* Footer */
         .footer {
-            background-color: #2d2d2d;
+            background-color: #ffffff;
             padding: 1rem 0;
-            margin-top: 2rem;
             text-align: center;
-            color: #888;
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
         }
 
         /* Responsive */
@@ -115,12 +103,14 @@
             }
 
             .nav-links {
-                flex-direction: column;
+                flex-wrap: wrap;
+                justify-content: center;
                 width: 100%;
             }
 
             .nav-link {
                 text-align: center;
+                font-size: 14px;
             }
         }
     </style>
@@ -147,12 +137,7 @@
         </div>
     </nav>
 
-    <main class="content-area">
-        <div class="container">
-            <h1 class="page-title">@yield('header')</h1>
-            @yield('content')
-        </div>
-    </main>
+    @yield('content')
 
     <footer class="footer">
         <div class="container">
@@ -160,51 +145,7 @@
         </div>
     </footer>
 
-    <!-- Matrix effect script -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const canvas = document.createElement('canvas');
-            canvas.style.position = 'fixed';
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.width = '100%';
-            canvas.style.height = '100%';
-            canvas.style.zIndex = '-2';
-            document.body.appendChild(canvas);
-
-            const ctx = canvas.getContext('2d');
-            let width = canvas.width = window.innerWidth;
-            let height = canvas.height = window.innerHeight;
-
-            const columns = Math.floor(width / 20);
-            const drops = new Array(columns).fill(1);
-
-            function draw() {
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-                ctx.fillRect(0, 0, width, height);
-
-                ctx.fillStyle = '#00ff00';
-                ctx.font = '15px monospace';
-
-                for (let i = 0; i < drops.length; i++) {
-                    const text = String.fromCharCode(Math.random() * 128);
-                    ctx.fillText(text, i * 20, drops[i] * 20);
-
-                    if (drops[i] * 20 > height && Math.random() > 0.975) {
-                        drops[i] = 0;
-                    }
-                    drops[i]++;
-                }
-            }
-
-            window.addEventListener('resize', () => {
-                width = canvas.width = window.innerWidth;
-                height = canvas.height = window.innerHeight;
-            });
-
-            setInterval(draw, 33);
-        });
-    </script>
+    <!-- Add any additional scripts here -->
 
     @stack('scripts')
 </body>

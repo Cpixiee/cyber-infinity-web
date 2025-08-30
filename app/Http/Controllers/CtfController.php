@@ -185,27 +185,46 @@ class CtfController extends Controller
 
     public function userProfile(Ctf $ctf, User $user)
     {
+        // Get solved challenges count
+        $solvedCount = $ctf->submissions()
+            ->where('user_id', $user->id)
+            ->where('status', 'correct')
+            ->count();
+            
         // Get user's performance in this CTF
         $userStats = [
             'points' => $ctf->submissions()
                 ->where('user_id', $user->id)
                 ->where('status', 'correct')
                 ->sum('points_earned'),
+            'solved' => $solvedCount, // Tambahkan key 'solved' yang missing
             'rank' => $ctf->getUserRank($user),
-            'solved_challenges' => $ctf->submissions()
-                ->where('user_id', $user->id)
-                ->where('status', 'correct')
-                ->with('challenge')
-                ->get(),
-            'total_attempts' => $ctf->submissions()
-                ->where('user_id', $user->id)
-                ->count(),
         ];
 
-        // Get overall CTF stats
-        $overallStats = $user->getCtfStats();
+        // Get solved challenges with details
+        $solvedChallenges = $ctf->challenges()
+            ->whereHas('submissions', function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->where('status', 'correct');
+            })
+            ->with(['submissions' => function($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->where('status', 'correct')
+                  ->orderBy('created_at', 'asc'); // Get first correct submission
+            }])
+            ->get();
 
-        return view('ctf.user-profile', compact('ctf', 'user', 'userStats', 'overallStats'));
+        // Get all submissions (for history)
+        $submissions = $ctf->submissions()
+            ->where('user_id', $user->id)
+            ->with('challenge')
+            ->orderByDesc('created_at')
+            ->get();
+            
+        // Get total challenges for completion rate
+        $totalChallenges = $ctf->challenges()->where('status', 'active')->count();
+
+        return view('ctf.user-profile', compact('ctf', 'user', 'userStats', 'solvedChallenges', 'submissions', 'totalChallenges'));
     }
 
     public function submitFlag(Request $request, Ctf $ctf, CtfChallenge $challenge)
@@ -630,5 +649,39 @@ class CtfController extends Controller
 
         return redirect()->route('admin.ctf.challenges', $ctf)
             ->with('success', 'Challenge deleted successfully!');
+    }
+
+    public function downloadFile(CtfChallenge $challenge, $fileIndex)
+    {
+        // Check if user is authenticated
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
+        // Check if CTF is accessible
+        $ctf = $challenge->ctf;
+        if ($ctf->status === 'draft' && !$user->isAdmin()) {
+            abort(404);
+        }
+
+        // Check if challenge has files
+        if (!$challenge->files || !isset($challenge->files[$fileIndex])) {
+            abort(404, 'File not found');
+        }
+
+        $file = $challenge->files[$fileIndex];
+        $filePath = storage_path('app/public/' . $file['path']);
+
+        // Check if file exists on disk
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found on server');
+        }
+
+        // Return file download response
+        return response()->download($filePath, $file['name'], [
+            'Content-Type' => $file['type'] ?? 'application/octet-stream',
+        ]);
     }
 }

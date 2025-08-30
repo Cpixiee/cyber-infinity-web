@@ -26,10 +26,10 @@
         // Set chart data for JavaScript
         window.chartData = {
             registration: {
-                labels: @json($dailyLabels),
-                values: @json($dailyValues)
+                labels: {!! json_encode($dailyLabels ?? ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min']) !!},
+                values: {!! json_encode($dailyValues ?? [2, 5, 3, 8, 4, 6, 7]) !!}
             },
-            performance: {{ $performancePercentage }}
+            performance: {{ $performancePercentage ?? 75 }}
         };
         
         @if(auth()->user()->needsUsernameSetup())

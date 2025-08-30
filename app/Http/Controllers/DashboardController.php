@@ -65,6 +65,29 @@ class DashboardController extends Controller
             ->take(3)
             ->get();
 
+        // Recent registrations for display
+        $recentRegistrations = WorkshopRegistration::with('workshop')
+            ->latest()
+            ->take(5)
+            ->get();
+
+        // Daily registration data for chart (last 7 days)
+        $dailyLabels = [];
+        $dailyValues = [];
+        
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $dailyLabels[] = $date->format('D'); // Mon, Tue, etc.
+            $dailyValues[] = User::where('role', '!=', 'admin')
+                ->whereDate('created_at', $date)
+                ->count();
+        }
+
+        // Calculate performance percentage (example: based on user growth)
+        $performancePercentage = $activeUsersPrevMonth > 0 
+            ? min(100, max(0, (($activeUsersThisMonth / max($activeUsersPrevMonth, 1)) * 50))) 
+            : 50;
+
         return view('dashboard', compact(
             'totalWorkshops', 
             'totalUsers', 
@@ -74,7 +97,11 @@ class DashboardController extends Controller
             'workshopRegistrationsThisMonth',
             'usersRegisteredThisMonth',
             'workshopsThisMonth',
-            'workshops'
+            'workshops',
+            'recentRegistrations',
+            'dailyLabels',
+            'dailyValues',
+            'performancePercentage'
         ));
     }
 }

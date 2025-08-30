@@ -327,7 +327,7 @@
                                                             </a>
                                                         @endif
                                                         @if($task->hasFile())
-                                                            <a href="{{ Storage::url($task->file_path) }}" target="_blank" 
+                                                            <a href="{{ route('challenges.task.file.download', $task) }}" 
                                                                class="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors duration-200">
                                                                 <i class="fas fa-download mr-2"></i>
                                                                 Download {{ $task->file_name }}

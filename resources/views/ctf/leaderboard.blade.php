@@ -189,7 +189,7 @@
                 <div class="divide-y divide-gray-100">
                                 @forelse($leaderboard as $index => $user)
                     <div class="p-6 flex items-center justify-between hover:bg-gray-50 cursor-pointer transition-colors duration-200 rank-item"
-                         onclick="window.location.href='{{ route('ctf.show', $ctf) }}'">
+                         onclick="window.location.href='{{ route('ctf.user.profile', [$ctf, $user]) }}'">
                             <div class="flex items-center space-x-4">
                                 <!-- Rank Badge -->
                                 <div class="flex-shrink-0">

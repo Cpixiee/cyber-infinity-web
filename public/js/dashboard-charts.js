@@ -173,31 +173,7 @@ function initializePerformanceChart() {
         }
     });
     
-    // Add percentage text in center
-    const centerText = {
-        id: 'centerText',
-        beforeDatasetsDraw: function(chart) {
-            const ctx = chart.ctx;
-            ctx.save();
-            
-            const centerX = chart.getDatasetMeta(0).data[0].x;
-            const centerY = chart.getDatasetMeta(0).data[0].y;
-            
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.font = 'bold 24px Inter, sans-serif';
-            ctx.fillStyle = performanceColor;
-            ctx.fillText(performancePercentage.toFixed(0) + '%', centerX, centerY - 5);
-            
-            ctx.font = '12px Inter, sans-serif';
-            ctx.fillStyle = '#6B7280';
-            ctx.fillText('Performance', centerX, centerY + 15);
-            
-            ctx.restore();
-        }
-    };
-    
-    Chart.register(centerText);
+
 }
 
 /**

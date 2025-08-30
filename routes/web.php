@@ -74,6 +74,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('challenges')->name('challenges.')->group(function () {
         Route::get('/', [ChallengeController::class, 'index'])->name('index');
         Route::get('/{challenge}', [ChallengeController::class, 'show'])->name('show');
+        Route::get('/tasks/{task}/download', [ChallengeController::class, 'downloadTaskFile'])
+            ->name('task.file.download');
         Route::post('/{challenge}/tasks/{task}/submit', [ChallengeController::class, 'submitFlag'])
             ->name('submit')
             ->middleware('throttle:10,1'); // 10 flag submissions per minute
@@ -164,6 +166,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/{ctf}', [App\Http\Controllers\CtfController::class, 'show'])->name('show');
         Route::get('/{ctf}/leaderboard', [App\Http\Controllers\CtfController::class, 'leaderboard'])->name('leaderboard');
         Route::get('/{ctf}/user/{user}', [App\Http\Controllers\CtfController::class, 'userProfile'])->name('user.profile');
+        Route::get('/challenges/{challenge}/files/{fileIndex}/download', [App\Http\Controllers\CtfController::class, 'downloadFile'])
+            ->name('challenge.file.download');
         Route::post('/{ctf}/challenges/{challenge}/submit', [App\Http\Controllers\CtfController::class, 'submitFlag'])
             ->name('submit')
             ->middleware('throttle:5,1'); // 5 CTF flag submissions per minute

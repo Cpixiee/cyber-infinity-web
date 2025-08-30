@@ -411,4 +411,31 @@ class ChallengeController extends Controller
         
         return back()->with('success', 'Task dan semua file terkait berhasil dihapus!');
     }
+
+    public function downloadTaskFile(ChallengeTask $task)
+    {
+        // Check if user is authenticated
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        if (!$user) {
+            abort(401);
+        }
+
+        // Check if task has file
+        if (!$task->hasFile()) {
+            abort(404, 'File not found');
+        }
+
+        $filePath = storage_path('app/public/' . $task->file_path);
+
+        // Check if file exists on disk
+        if (!file_exists($filePath)) {
+            abort(404, 'File not found on server');
+        }
+
+        // Return file download response
+        return response()->download($filePath, $task->file_name, [
+            'Content-Type' => 'application/octet-stream',
+        ]);
+    }
 }
