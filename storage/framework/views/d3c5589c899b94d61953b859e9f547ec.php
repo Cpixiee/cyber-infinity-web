@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $challenge->title }} - Cyber Infinity</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo e($challenge->title); ?> - Cyber Infinity</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/fih-logo.png') }}">
+    <link rel="icon" type="image/png" href="<?php echo e(asset('images/fih-logo.png')); ?>">
+    <link rel="shortcut icon" type="image/png" href="<?php echo e(asset('images/fih-logo.png')); ?>">
     
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -20,7 +20,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Vite Assets -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     
     <!-- Custom CSS for Video Player -->
     <style>
@@ -91,7 +91,7 @@
                 <!-- Logo -->
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center">
-                        <img src="{{ asset('images/fih-logo.png') }}" alt="FIH Logo" class="w-8 h-8 rounded-lg">
+                        <img src="<?php echo e(asset('images/fih-logo.png')); ?>" alt="FIH Logo" class="w-8 h-8 rounded-lg">
                         <h1 class="ml-3 text-xl font-bold text-gray-900">Cyber Infinity</h1>
                     </div>
                     <!-- Mobile Close Button -->
@@ -102,12 +102,12 @@
 
                 <!-- Navigation -->
                 <nav class="flex-1 px-4 py-4 space-y-2">
-                    <a href="{{ route('dashboard') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                    <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-home w-5 h-5 mr-3"></i>
                         Dashboard
                     </a>
                     
-                    <a href="{{ route('workshops.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                    <a href="<?php echo e(route('workshops.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-graduation-cap w-5 h-5 mr-3"></i>
                         Workshop
                     </a>
@@ -123,16 +123,16 @@
                         </button>
                         
                         <div x-show="open" x-transition class="mt-1 ml-6 space-y-1">
-                            <a href="{{ route('challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                            <a href="<?php echo e(route('challenges.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                                 <i class="fas fa-play w-4 h-4 mr-3"></i>
                                 Lihat Challenges
                             </a>
-                            @if(auth()->user()->isAdmin())
-                            <a href="{{ route('admin.challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                            <?php if(auth()->user()->isAdmin()): ?>
+                            <a href="<?php echo e(route('admin.challenges.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                                 <i class="fas fa-cog w-4 h-4 mr-3"></i>
                                 Kelola Challenges
                             </a>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </div>
                     
@@ -147,28 +147,28 @@
                         </button>
                         
                         <div x-show="open" x-transition class="mt-1 ml-6 space-y-1">
-                            <a href="{{ route('ctf.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                            <a href="<?php echo e(route('ctf.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                                 <i class="fas fa-flag w-4 h-4 mr-3"></i>
                                 CTF Events
                             </a>
 
-                            @if(auth()->user()->isAdmin())
-                            <a href="{{ route('admin.ctf.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                            <?php if(auth()->user()->isAdmin()): ?>
+                            <a href="<?php echo e(route('admin.ctf.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                                 <i class="fas fa-cog w-4 h-4 mr-3"></i>
                                 Manage CTF
                             </a>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </div>
                     
-                    @if(auth()->user()->isAdmin())
-                    <a href="{{ route('admin.registrations.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                    <?php if(auth()->user()->isAdmin()): ?>
+                    <a href="<?php echo e(route('admin.registrations.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-user-check w-5 h-5 mr-3"></i>
                         Registrasi Workshop
                     </a>
-                    @endif
+                    <?php endif; ?>
                     
-                    <a href="{{ route('profile.edit') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                    <a href="<?php echo e(route('profile.edit')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-user-cog w-5 h-5 mr-3"></i>
                         Profile
                     </a>
@@ -181,13 +181,13 @@
                             <i class="fas fa-user text-gray-600 text-sm"></i>
                         </div>
                         <div class="ml-3">
-                            <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                            <p class="text-xs text-gray-500">{{ ucfirst(auth()->user()->role) }}</p>
-                            <p class="text-xs text-blue-600 font-medium">{{ auth()->user()->points ?? 0 }} poin</p>
+                            <p class="text-sm font-medium text-gray-900"><?php echo e(auth()->user()->name); ?></p>
+                            <p class="text-xs text-gray-500"><?php echo e(ucfirst(auth()->user()->role)); ?></p>
+                            <p class="text-xs text-blue-600 font-medium"><?php echo e(auth()->user()->points ?? 0); ?> poin</p>
                         </div>
                     </div>
-                    <form method="POST" action="{{ route('logout') }}" id="logout-form">
-                        @csrf
+                    <form method="POST" action="<?php echo e(route('logout')); ?>" id="logout-form">
+                        <?php echo csrf_field(); ?>
                         <button type="button" onclick="confirmLogout()" class="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50">
                             <i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i>
                             Logout
@@ -204,39 +204,41 @@
                 <div class="px-6 py-4">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center">
-                            <a href="{{ route('challenges.index') }}" class="mr-4 text-gray-600 hover:text-gray-900">
+                            <a href="<?php echo e(route('challenges.index')); ?>" class="mr-4 text-gray-600 hover:text-gray-900">
                                 <i class="fas fa-arrow-left"></i>
                             </a>
                             <div>
-                                <h1 class="text-2xl font-bold text-gray-900">{{ $challenge->title }}</h1>
+                                <h1 class="text-2xl font-bold text-gray-900"><?php echo e($challenge->title); ?></h1>
                                 <div class="flex items-center gap-2 mt-1">
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full {{ $challenge->getCategoryColor() }}">
-                                        {{ $challenge->category }}
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full <?php echo e($challenge->getCategoryColor()); ?>">
+                                        <?php echo e($challenge->category); ?>
+
                                     </span>
-                                    <span class="px-2 py-1 text-xs font-medium rounded-full {{ $challenge->getDifficultyColor() }}">
-                                        {{ $challenge->difficulty }}
+                                    <span class="px-2 py-1 text-xs font-medium rounded-full <?php echo e($challenge->getDifficultyColor()); ?>">
+                                        <?php echo e($challenge->difficulty); ?>
+
                                     </span>
                                     <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                                        <i class="fas fa-star mr-1"></i>{{ $challenge->points }} poin
+                                        <i class="fas fa-star mr-1"></i><?php echo e($challenge->points); ?> poin
                                     </span>
                                 </div>
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
-                            <a href="{{ route('challenges.index') }}" 
+                            <a href="<?php echo e(route('challenges.index')); ?>" 
                                class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
                                 <i class="fas fa-arrow-left mr-2"></i>Kembali
                             </a>
-                            <a href="{{ route('challenges.submissions', $challenge) }}" 
+                            <a href="<?php echo e(route('challenges.submissions', $challenge)); ?>" 
                                class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
                                 <i class="fas fa-paper-plane mr-2"></i>Submissions
                             </a>
-                            @if($challenge->external_link)
-                                <a href="{{ $challenge->external_link }}" target="_blank" 
+                            <?php if($challenge->external_link): ?>
+                                <a href="<?php echo e($challenge->external_link); ?>" target="_blank" 
                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">
                                     <i class="fas fa-external-link-alt mr-2"></i>Lab Environment
                                 </a>
-                            @endif
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>
@@ -249,54 +251,54 @@
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
                         <div class="p-6">
                             <h2 class="text-lg font-semibold text-gray-900 mb-3">Deskripsi Challenge</h2>
-                            <p class="text-gray-700 leading-relaxed">{{ $challenge->description }}</p>
+                            <p class="text-gray-700 leading-relaxed"><?php echo e($challenge->description); ?></p>
                         </div>
                     </div>
 
                     <!-- Progress Overview -->
-                    @auth
-                        @php
+                    <?php if(auth()->guard()->check()): ?>
+                        <?php
                             $completionPercentage = $challenge->getCompletionPercentage(auth()->user());
                             $totalTasks = $challenge->tasks->count();
                             $completedTasks = $userProgress->where('status', 'correct')->count();
                             $isCompleted = $challenge->isCompletedByUser(auth()->user());
-                        @endphp
+                        ?>
                         
                         <div class="bg-white rounded-xl shadow-sm border border-gray-100 mb-6">
                             <div class="p-6">
                                 <div class="flex items-center justify-between mb-4">
                                     <h2 class="text-lg font-semibold text-gray-900">Progress Anda</h2>
-                                    @if($isCompleted)
+                                    <?php if($isCompleted): ?>
                                         <div class="flex items-center text-green-600">
                                             <i class="fas fa-trophy mr-2"></i>
                                             <span class="font-medium">Challenge Selesai!</span>
                                         </div>
-                                    @endif
+                                    <?php endif; ?>
                                 </div>
                                 
                                 <div class="flex items-center justify-between text-sm text-gray-600 mb-2">
-                                    <span>{{ $completedTasks }} dari {{ $totalTasks }} tasks selesai</span>
-                                    <span>{{ $completionPercentage }}%</span>
+                                    <span><?php echo e($completedTasks); ?> dari <?php echo e($totalTasks); ?> tasks selesai</span>
+                                    <span><?php echo e($completionPercentage); ?>%</span>
                                 </div>
                                 
                                 <div class="w-full bg-gray-200 rounded-full h-3">
-                                    <div class="bg-blue-600 h-3 rounded-full transition-all duration-300" data-progress="{{ $completionPercentage }}"></div>
+                                    <div class="bg-blue-600 h-3 rounded-full transition-all duration-300" data-progress="<?php echo e($completionPercentage); ?>"></div>
                                 </div>
                                 
-                                @if($userProgress->count() > 0)
+                                <?php if($userProgress->count() > 0): ?>
                                     <div class="mt-4 text-sm text-gray-600">
                                         <span>Poin yang diperoleh: </span>
-                                        <span class="font-medium text-blue-600">{{ $userProgress->where('status', 'correct')->sum('points_earned') }} poin</span>
+                                        <span class="font-medium text-blue-600"><?php echo e($userProgress->where('status', 'correct')->sum('points_earned')); ?> poin</span>
                                     </div>
-                                @endif
+                                <?php endif; ?>
                             </div>
                         </div>
-                    @endauth
+                    <?php endif; ?>
 
                     <!-- Tasks -->
                     <div class="space-y-6">
-                        @foreach($challenge->tasks as $index => $task)
-                            @php
+                        <?php $__currentLoopData = $challenge->tasks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $index => $task): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                            <?php
                                 $userSubmission = null;
                                 $canAccess = true;
                                 $isCompleted = false;
@@ -308,84 +310,86 @@
                                     $isCompleted = $task->isCompletedByUser(auth()->user());
                                     $attempts = $task->getUserAttemptsCount(auth()->user());
                                 }
-                            @endphp
+                            ?>
                             
-                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 {{ !$canAccess ? 'opacity-50' : '' }}">
+                            <div class="bg-white rounded-xl shadow-sm border border-gray-100 <?php echo e(!$canAccess ? 'opacity-50' : ''); ?>">
                                 <div class="p-6">
                                     <!-- Task Header -->
                                     <div class="flex items-start justify-between mb-4">
                                         <div class="flex items-start">
-                                            <div class="w-8 h-8 {{ $isCompleted ? 'bg-green-100 text-green-600' : ($canAccess ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400') }} rounded-full flex items-center justify-center mr-3 mt-1">
-                                                @if($isCompleted)
+                                            <div class="w-8 h-8 <?php echo e($isCompleted ? 'bg-green-100 text-green-600' : ($canAccess ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400')); ?> rounded-full flex items-center justify-center mr-3 mt-1">
+                                                <?php if($isCompleted): ?>
                                                     <i class="fas fa-check text-sm"></i>
-                                                @else
-                                                    <span class="text-sm font-medium">{{ $index + 1 }}</span>
-                                                @endif
+                                                <?php else: ?>
+                                                    <span class="text-sm font-medium"><?php echo e($index + 1); ?></span>
+                                                <?php endif; ?>
                                             </div>
                                             <div class="flex-1">
-                                                <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $task->title }}</h3>
-                                                @if($canAccess)
-                                                    <p class="text-gray-700 leading-relaxed mb-3">{{ $task->description }}</p>
+                                                <h3 class="text-lg font-semibold text-gray-900 mb-2"><?php echo e($task->title); ?></h3>
+                                                <?php if($canAccess): ?>
+                                                    <p class="text-gray-700 leading-relaxed mb-3"><?php echo e($task->description); ?></p>
                                                     <div class="flex flex-wrap gap-2">
-                                                        @if($task->external_link)
-                                                            <a href="{{ $task->external_link }}" target="_blank" 
+                                                        <?php if($task->external_link): ?>
+                                                            <a href="<?php echo e($task->external_link); ?>" target="_blank" 
                                                                class="inline-flex items-center px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors duration-200">
                                                                 <i class="fas fa-external-link-alt mr-2"></i>
                                                                 Akses Lab/Resource
                                                             </a>
-                                                        @endif
-                                                        @if($task->hasFile())
-                                                            <a href="{{ route('challenges.task.file.download', $task) }}" 
+                                                        <?php endif; ?>
+                                                        <?php if($task->hasFile()): ?>
+                                                            <a href="<?php echo e(route('challenges.task.file.download', $task)); ?>" 
                                                                class="inline-flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors duration-200">
                                                                 <i class="fas fa-download mr-2"></i>
-                                                                Download {{ $task->file_name }}
-                                                                <span class="ml-2 text-xs opacity-75">({{ $task->formatted_file_size }})</span>
+                                                                Download <?php echo e($task->file_name); ?>
+
+                                                                <span class="ml-2 text-xs opacity-75">(<?php echo e($task->formatted_file_size); ?>)</span>
                                                             </a>
-                                                        @endif
+                                                        <?php endif; ?>
                                                     </div>
-                                                @else
+                                                <?php else: ?>
                                                     <p class="text-gray-500 italic">Selesaikan task sebelumnya untuk membuka task ini</p>
-                                                @endif
+                                                <?php endif; ?>
                                             </div>
                                         </div>
                                         <div class="flex items-center space-x-2 ml-4">
-                                            @if($canAccess && $task->points > 0)
+                                            <?php if($canAccess && $task->points > 0): ?>
                                                 <span class="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
-                                                    <i class="fas fa-star mr-1"></i>{{ $task->points }} poin
+                                                    <i class="fas fa-star mr-1"></i><?php echo e($task->points); ?> poin
                                                 </span>
-                                            @endif
-                                            @if(!$canAccess)
+                                            <?php endif; ?>
+                                            <?php if(!$canAccess): ?>
                                                 <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-600">
                                                     <i class="fas fa-lock mr-1"></i>Terkunci
                                                 </span>
-                                            @endif
+                                            <?php endif; ?>
                                         </div>
                                     </div>
 
                                     <!-- Task Status -->
-                                    @if($userSubmission && $canAccess)
+                                    <?php if($userSubmission && $canAccess): ?>
                                         <div class="mb-4">
                                             <div class="flex items-center justify-between text-sm">
                                                 <div class="flex items-center">
-                                                    <span class="px-2 py-1 text-xs font-medium rounded-full {{ $userSubmission->getStatusColor() }}">
-                                                        <i class="{{ $userSubmission->getStatusIcon() }} mr-1"></i>
-                                                        {{ ucfirst($userSubmission->status) }}
+                                                    <span class="px-2 py-1 text-xs font-medium rounded-full <?php echo e($userSubmission->getStatusColor()); ?>">
+                                                        <i class="<?php echo e($userSubmission->getStatusIcon()); ?> mr-1"></i>
+                                                        <?php echo e(ucfirst($userSubmission->status)); ?>
+
                                                     </span>
-                                                    @if($attempts > 1)
-                                                        <span class="ml-2 text-gray-500">{{ $attempts }} percobaan</span>
-                                                    @endif
+                                                    <?php if($attempts > 1): ?>
+                                                        <span class="ml-2 text-gray-500"><?php echo e($attempts); ?> percobaan</span>
+                                                    <?php endif; ?>
                                                 </div>
-                                                @if($userSubmission->status === 'correct')
-                                                    <span class="text-green-600 font-medium">+{{ $userSubmission->points_earned }} poin</span>
-                                                @endif
+                                                <?php if($userSubmission->status === 'correct'): ?>
+                                                    <span class="text-green-600 font-medium">+<?php echo e($userSubmission->points_earned); ?> poin</span>
+                                                <?php endif; ?>
                                             </div>
                                         </div>
-                                    @endif
+                                    <?php endif; ?>
 
                                     <!-- Flag Submission Form -->
-                                    @if($canAccess && !$isCompleted)
-                                        <form action="{{ route('challenges.submit', [$challenge, $task]) }}" method="POST" class="mt-4">
-                                            @csrf
+                                    <?php if($canAccess && !$isCompleted): ?>
+                                        <form action="<?php echo e(route('challenges.submit', [$challenge, $task])); ?>" method="POST" class="mt-4">
+                                            <?php echo csrf_field(); ?>
                                             <div class="flex gap-3">
                                                 <div class="flex-1">
                                                     <input type="text" name="flag" 
@@ -399,132 +403,132 @@
                                                 </button>
                                             </div>
                                         </form>
-                                    @elseif($isCompleted)
+                                    <?php elseif($isCompleted): ?>
                                         <div class="mt-4 p-3 bg-green-50 rounded-lg">
                                             <div class="flex items-center text-green-700">
                                                 <i class="fas fa-check-circle mr-2"></i>
                                                 <span class="font-medium">Task selesai! Flag: </span>
-                                                <code class="ml-2 px-2 py-1 bg-green-100 rounded text-sm">{{ $task->flag }}</code>
+                                                <code class="ml-2 px-2 py-1 bg-green-100 rounded text-sm"><?php echo e($task->flag); ?></code>
                                             </div>
                                         </div>
-                                    @endif
+                                    <?php endif; ?>
 
                                     <!-- Hints Section -->
-                                    @if($task->hints->count() > 0)
+                                    <?php if($task->hints->count() > 0): ?>
                                         <div class="mt-4 pt-4 border-t border-gray-200" x-data="{ showHints: false }">
                                             <button @click="showHints = !showHints" 
                                                     class="w-full flex items-center justify-between p-3 bg-yellow-50 rounded-lg hover:bg-yellow-100 transition-colors duration-200">
                                                 <div class="flex items-center">
                                                     <i class="fas fa-lightbulb text-yellow-600 mr-2"></i>
-                                                    <span class="font-medium text-yellow-800">Hints Tersedia ({{ $task->hints->count() }})</span>
+                                                    <span class="font-medium text-yellow-800">Hints Tersedia (<?php echo e($task->hints->count()); ?>)</span>
                                                 </div>
                                                 <i class="fas fa-chevron-down text-yellow-600 transition-transform" :class="{ 'rotate-180': showHints }"></i>
                                             </button>
                                             
                                             <div x-show="showHints" x-transition class="mt-3 space-y-3">
-                                                @foreach($task->hints->where('is_active', true)->sortBy('order') as $hint)
+                                                <?php $__currentLoopData = $task->hints->where('is_active', true)->sortBy('order'); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $hint): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
                                                     <div class="border border-yellow-200 rounded-lg bg-white shadow-sm">
                                                         <div class="p-4">
                                                             <div class="flex items-start justify-between">
                                                                 <div class="flex-1">
                                                                     <div class="flex items-center mb-2">
                                                                         <i class="fas fa-info-circle text-yellow-500 mr-2"></i>
-                                                                        <h4 class="font-medium text-gray-900">{{ $hint->title }}</h4>
+                                                                        <h4 class="font-medium text-gray-900"><?php echo e($hint->title); ?></h4>
                                                                     </div>
-                                                                    @if(in_array($hint->id, $userHints))
+                                                                    <?php if(in_array($hint->id, $userHints)): ?>
                                                                         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                                                            @if($hint->content_type === 'text')
+                                                                            <?php if($hint->content_type === 'text'): ?>
                                                                                 <!-- Text Only Hint -->
                                                                                 <div class="prose prose-sm max-w-none">
-                                                                                    <p class="text-sm text-green-800 whitespace-pre-wrap">{{ $hint->content }}</p>
+                                                                                    <p class="text-sm text-green-800 whitespace-pre-wrap"><?php echo e($hint->content); ?></p>
                                                                                 </div>
-                                                                            @elseif($hint->content_type === 'video')
+                                                                            <?php elseif($hint->content_type === 'video'): ?>
                                                                                 <!-- Video Only Hint -->
-                                                                                @if($hint->video_path)
+                                                                                <?php if($hint->video_path): ?>
                                                                                     <div class="video-container">
                                                                                         <div class="flex items-center mb-3">
                                                                                             <i class="fas fa-play-circle text-green-600 mr-2"></i>
                                                                                             <span class="text-sm font-medium text-green-800">Video Tutorial</span>
                                                                                         </div>
                                                                                         <video controls class="w-full rounded-lg shadow-sm bg-black" style="max-height: 400px;">
-                                                                                            <source src="{{ asset('storage/' . $hint->video_path) }}" type="video/mp4">
-                                                                                            <source src="{{ asset('storage/' . $hint->video_path) }}" type="video/webm">
-                                                                                            <source src="{{ asset('storage/' . $hint->video_path) }}" type="video/ogg">
+                                                                                            <source src="<?php echo e(asset('storage/' . $hint->video_path)); ?>" type="video/mp4">
+                                                                                            <source src="<?php echo e(asset('storage/' . $hint->video_path)); ?>" type="video/webm">
+                                                                                            <source src="<?php echo e(asset('storage/' . $hint->video_path)); ?>" type="video/ogg">
                                                                                             Browser Anda tidak mendukung video player.
                                                                                         </video>
                                                                                         <div class="mt-2 text-xs text-green-600">
                                                                                             <i class="fas fa-file-video mr-1"></i>
-                                                                                            {{ $hint->video_name }} ({{ $hint->getFormattedVideoSizeAttribute() }})
+                                                                                            <?php echo e($hint->video_name); ?> (<?php echo e($hint->getFormattedVideoSizeAttribute()); ?>)
                                                                                         </div>
                                                                                     </div>
-                                                                                @endif
-                                                                            @elseif($hint->content_type === 'both')
+                                                                                <?php endif; ?>
+                                                                            <?php elseif($hint->content_type === 'both'): ?>
                                                                                 <!-- Text + Video Hint -->
-                                                                                @if($hint->content)
+                                                                                <?php if($hint->content): ?>
                                                                                     <div class="prose prose-sm max-w-none mb-4">
-                                                                                        <p class="text-sm text-green-800 whitespace-pre-wrap">{{ $hint->content }}</p>
+                                                                                        <p class="text-sm text-green-800 whitespace-pre-wrap"><?php echo e($hint->content); ?></p>
                                                                                     </div>
-                                                                                @endif
-                                                                                @if($hint->video_path)
+                                                                                <?php endif; ?>
+                                                                                <?php if($hint->video_path): ?>
                                                                                     <div class="video-container border-t border-green-200 pt-4">
                                                                                         <div class="flex items-center mb-3">
                                                                                             <i class="fas fa-play-circle text-green-600 mr-2"></i>
                                                                                             <span class="text-sm font-medium text-green-800">Video Tutorial</span>
                                                                                         </div>
                                                                                         <video controls class="w-full rounded-lg shadow-sm bg-black" style="max-height: 400px;">
-                                                                                            <source src="{{ asset('storage/' . $hint->video_path) }}" type="video/mp4">
-                                                                                            <source src="{{ asset('storage/' . $hint->video_path) }}" type="video/webm">
-                                                                                            <source src="{{ asset('storage/' . $hint->video_path) }}" type="video/ogg">
+                                                                                            <source src="<?php echo e(asset('storage/' . $hint->video_path)); ?>" type="video/mp4">
+                                                                                            <source src="<?php echo e(asset('storage/' . $hint->video_path)); ?>" type="video/webm">
+                                                                                            <source src="<?php echo e(asset('storage/' . $hint->video_path)); ?>" type="video/ogg">
                                                                                             Browser Anda tidak mendukung video player.
                                                                                         </video>
                                                                                         <div class="mt-2 text-xs text-green-600">
                                                                                             <i class="fas fa-file-video mr-1"></i>
-                                                                                            {{ $hint->video_name }} ({{ $hint->getFormattedVideoSizeAttribute() }})
+                                                                                            <?php echo e($hint->video_name); ?> (<?php echo e($hint->getFormattedVideoSizeAttribute()); ?>)
                                                                                         </div>
                                                                                     </div>
-                                                                                @endif
-                                                                            @endif
+                                                                                <?php endif; ?>
+                                                                            <?php endif; ?>
                                                                         </div>
-                                                                    @else
+                                                                    <?php else: ?>
                                                                         <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
                                                                             <p class="text-sm text-gray-500 italic flex items-center">
                                                                                 <i class="fas fa-lock mr-2"></i>
                                                                                 Hint ini tersembunyi. Beli untuk melihat isinya.
                                                                             </p>
                                                                         </div>
-                                                                    @endif
+                                                                    <?php endif; ?>
                                                                 </div>
                                                                 <div class="ml-4 flex flex-col items-end">
-                                                                    @if(!in_array($hint->id, $userHints))
-                                                                        <button data-hint-id="{{ $hint->id }}" data-hint-cost="{{ $hint->cost }}" onclick="purchaseHint(this.dataset.hintId, this.dataset.hintCost)" 
+                                                                    <?php if(!in_array($hint->id, $userHints)): ?>
+                                                                        <button data-hint-id="<?php echo e($hint->id); ?>" data-hint-cost="<?php echo e($hint->cost); ?>" onclick="purchaseHint(this.dataset.hintId, this.dataset.hintCost)" 
                                                                                 class="px-4 py-2 bg-yellow-500 text-white text-sm font-medium rounded-lg hover:bg-yellow-600 transition-colors duration-200 shadow-sm">
-                                                                            <i class="fas fa-coins mr-2"></i>Beli ({{ $hint->cost }} poin)
+                                                                            <i class="fas fa-coins mr-2"></i>Beli (<?php echo e($hint->cost); ?> poin)
                                                                         </button>
-                                                                    @else
+                                                                    <?php else: ?>
                                                                         <div class="px-4 py-2 bg-green-100 text-green-800 text-sm font-medium rounded-lg border border-green-300">
                                                                             <i class="fas fa-check-circle mr-2"></i>Sudah Dibeli
                                                                         </div>
-                                                                    @endif
+                                                                    <?php endif; ?>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                @endforeach
+                                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                             </div>
                                         </div>
-                                    @endif
+                                    <?php endif; ?>
                                 </div>
                             </div>
-                        @endforeach
+                        <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                     </div>
 
                     <!-- Completion Celebration -->
-                    @if($isCompleted ?? false)
+                    <?php if($isCompleted ?? false): ?>
                         <div class="mt-8 bg-gradient-to-r from-green-400 to-blue-500 rounded-xl shadow-lg text-white">
                             <div class="p-8 text-center">
                                 <div class="text-6xl mb-4">🎉</div>
                                 <h2 class="text-2xl font-bold mb-2">Selamat!</h2>
-                                <p class="text-lg mb-4">Anda telah menyelesaikan challenge "{{ $challenge->title }}"</p>
+                                <p class="text-lg mb-4">Anda telah menyelesaikan challenge "<?php echo e($challenge->title); ?>"</p>
                                 <div class="flex items-center justify-center space-x-6 text-sm">
                                     <div class="flex items-center">
                                         <i class="fas fa-trophy mr-2"></i>
@@ -532,18 +536,18 @@
                                     </div>
                                     <div class="flex items-center">
                                         <i class="fas fa-star mr-2"></i>
-                                        <span>{{ $challenge->getUserPoints(auth()->user()) }} poin diperoleh</span>
+                                        <span><?php echo e($challenge->getUserPoints(auth()->user())); ?> poin diperoleh</span>
                                     </div>
                                 </div>
                                 <div class="mt-6">
-                                    <a href="{{ route('challenges.index') }}" 
+                                    <a href="<?php echo e(route('challenges.index')); ?>" 
                                        class="inline-flex items-center px-6 py-3 bg-white text-gray-900 rounded-lg hover:bg-gray-100 transition-colors duration-200 font-medium">
                                         <i class="fas fa-arrow-left mr-2"></i>Kembali ke Challenges
                                     </a>
                                 </div>
                             </div>
                         </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </main>
         </div>
@@ -726,30 +730,31 @@
 
     <script>
         // Set user points for JavaScript
-        window.userPoints = parseInt('{{ auth()->user()->points ?? 0 }}');
+        window.userPoints = parseInt('<?php echo e(auth()->user()->points ?? 0); ?>');
     </script>
 
-    @if(session('success'))
+    <?php if(session('success')): ?>
     <script>
         Swal.fire({
             icon: 'success',
             title: 'Berhasil!',
-            text: '{{ session("success") }}',
+            text: '<?php echo e(session("success")); ?>',
             showConfirmButton: false,
             timer: 3000
         });
     </script>
-    @endif
+    <?php endif; ?>
 
-    @if(session('error'))
+    <?php if(session('error')): ?>
     <script>
         Swal.fire({
             icon: 'error',
             title: 'Error!',
-            text: '{{ session("error") }}',
+            text: '<?php echo e(session("error")); ?>',
             confirmButtonText: 'OK'
         });
     </script>
-    @endif
+    <?php endif; ?>
 </body>
 </html>
+<?php /**PATH C:\laragon\www\cyber-infinity-web\resources\views/challenges/show.blade.php ENDPATH**/ ?>

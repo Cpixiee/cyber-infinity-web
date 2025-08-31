@@ -17,6 +17,8 @@ class Challenge extends Model
         'points',
         'external_link',
         'status',
+        'scheduled_at',
+        'available_at',
         'created_by'
     ];
 
@@ -33,7 +35,9 @@ class Challenge extends Model
 
     protected $casts = [
         'points' => 'integer',
-        'status' => 'string'
+        'status' => 'string',
+        'scheduled_at' => 'datetime',
+        'available_at' => 'datetime'
     ];
 
     // Relationship with tasks
@@ -87,6 +91,142 @@ class Challenge extends Model
     }
 
     // Get user's total points from this challenge
+    public function getUserTotalPoints($user)
+    {
+        if (!$user) return 0;
+        
+        return $this->submissions()
+            ->where('user_id', $user->id)
+            ->where('status', 'correct')
+            ->sum('points_earned');
+    }
+
+    // Check if challenge is accessible based on scheduling
+    public function isAccessible()
+    {
+        // If status is draft, never accessible to public
+        if ($this->status === 'draft') {
+            return false;
+        }
+
+        // If status is inactive, not accessible
+        if ($this->status === 'inactive') {
+            return false;
+        }
+
+        // If no scheduling set, follow normal active status
+        if (!$this->scheduled_at && !$this->available_at) {
+            return $this->status === 'active';
+        }
+
+        $now = now();
+
+        // If scheduled_at is set, check if it's time
+        if ($this->scheduled_at && $now->lt($this->scheduled_at)) {
+            return false; // Not yet time
+        }
+
+        // If available_at is set, check if still available
+        if ($this->available_at && $now->gt($this->available_at)) {
+            return false; // No longer available
+        }
+
+        return $this->status === 'active';
+    }
+
+    // Check if challenge is locked (active but not yet scheduled)
+    public function isLocked()
+    {
+        if ($this->status !== 'active') {
+            return false;
+        }
+
+        if (!$this->scheduled_at) {
+            return false;
+        }
+
+        return now()->lt($this->scheduled_at);
+    }
+
+    // Get time until challenge becomes available
+    public function getTimeUntilAvailable()
+    {
+        if (!$this->scheduled_at || !$this->isLocked()) {
+            return null;
+        }
+
+        return $this->scheduled_at->diffForHumans();
+    }
+
+    // Get time until challenge expires
+    public function getTimeUntilExpiry()
+    {
+        if (!$this->available_at) {
+            return null;
+        }
+
+        $now = now();
+        if ($now->gt($this->available_at)) {
+            return 'Expired';
+        }
+
+        return $this->available_at->diffForHumans();
+    }
+
+    // Scope for accessible challenges
+    public function scopeAccessible($query)
+    {
+        $now = now();
+        
+        return $query->where('status', 'active')
+            ->where(function($q) use ($now) {
+                $q->where(function($subQ) use ($now) {
+                    // No scheduling set
+                    $subQ->whereNull('scheduled_at')
+                         ->whereNull('available_at');
+                })
+                ->orWhere(function($subQ) use ($now) {
+                    // Scheduled but time has come and not expired
+                    $subQ->where('scheduled_at', '<=', $now)
+                         ->where(function($expQ) use ($now) {
+                             $expQ->whereNull('available_at')
+                                  ->orWhere('available_at', '>', $now);
+                         });
+                });
+            });
+    }
+
+    // Scope for locked challenges (active but not yet scheduled)
+    public function scopeLocked($query)
+    {
+        $now = now();
+        
+        return $query->where('status', 'active')
+            ->where('scheduled_at', '>', $now);
+    }
+
+    // Scope for expired challenges (active but past available_at time)
+    public function scopeExpired($query)
+    {
+        $now = now();
+        
+        return $query->where('status', 'active')
+            ->where('available_at', '<', $now);
+    }
+
+    // Check if challenge is expired
+    public function isExpired()
+    {
+        if ($this->status !== 'active') {
+            return false;
+        }
+
+        if (!$this->available_at) {
+            return false;
+        }
+
+        return now()->gt($this->available_at);
+    }
     public function getUserPoints($user)
     {
         if (!$user) return 0;

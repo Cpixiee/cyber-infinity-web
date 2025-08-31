@@ -6,6 +6,7 @@ use App\Models\Challenge;
 use App\Models\ChallengeTask;
 use App\Models\ChallengeSubmission;
 use App\Models\ChallengeHint;
+use App\Models\User;
 use App\Models\UserHintPurchase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -17,8 +18,16 @@ class ChallengeController extends Controller
     // User-facing methods
     public function index(Request $request)
     {
-        $query = Challenge::with(['tasks', 'submissions'])
-            ->where('status', 'active');
+        // Admin can see all challenges (including locked), users only see accessible ones
+        /** @var User|null $user */
+        $user = Auth::user();
+        if ($user && $user->isAdmin()) {
+            $query = Challenge::with(['tasks', 'submissions'])
+                ->where('status', '!=', 'draft'); // Admin sees all except draft
+        } else {
+            $query = Challenge::with(['tasks', 'submissions'])
+                ->accessible(); // Use new scope for accessible challenges
+        }
         
         // Filter by category
         if ($request->filled('category')) {
@@ -36,19 +45,77 @@ class ChallengeController extends Controller
         }
         
         $challenges = $query->latest()->paginate(12);
+
+        // Get locked challenges to show as coming soon (only for non-admin users)
+        if ($user && $user->isAdmin()) {
+            $lockedChallenges = collect(); // Empty collection for admin
+        } else {
+            $lockedChallenges = Challenge::with(['tasks'])
+                ->locked()
+                ->when($request->filled('category'), function($q) use ($request) {
+                    $q->where('category', $request->category);
+                })
+                ->when($request->filled('difficulty'), function($q) use ($request) {
+                    $q->where('difficulty', $request->difficulty);
+                })
+                ->when($request->filled('search'), function($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->search . '%');
+                })
+                ->latest()
+                ->take(6)
+                ->get();
+        }
+
+        // Get expired challenges to show as ended (only for non-admin users)
+        if ($user && $user->isAdmin()) {
+            $expiredChallenges = collect(); // Empty collection for admin
+        } else {
+            $expiredChallenges = Challenge::with(['tasks'])
+                ->expired()
+                ->when($request->filled('category'), function($q) use ($request) {
+                    $q->where('category', $request->category);
+                })
+                ->when($request->filled('difficulty'), function($q) use ($request) {
+                    $q->where('difficulty', $request->difficulty);
+                })
+                ->when($request->filled('search'), function($q) use ($request) {
+                    $q->where('title', 'like', '%' . $request->search . '%');
+                })
+                ->latest()
+                ->take(6)
+                ->get();
+        }
         
         // Get categories and difficulties for filters
         $categories = Challenge::distinct('category')->pluck('category');
         $difficulties = ['Easy', 'Medium', 'Hard'];
         
-        return view('challenges.index', compact('challenges', 'categories', 'difficulties'));
+        return view('challenges.index', compact('challenges', 'lockedChallenges', 'expiredChallenges', 'categories', 'difficulties'));
     }
 
     public function show(Challenge $challenge)
     {
+        // Admin can access all challenges regardless of status/schedule
+        /** @var User|null $user */
+        $user = Auth::user();
+        if (!$user || !$user->isAdmin()) {
+            // Check if challenge is accessible for regular users
+            if (!$challenge->isAccessible()) {
+                // If challenge is locked (scheduled but not yet time)
+                if ($challenge->isLocked()) {
+                    return view('challenges.locked', compact('challenge'));
+                }
+                
+                // Otherwise, challenge is not accessible (draft, inactive, expired)
+                abort(404);
+            }
+        }
+
         $challenge->load(['tasks' => function($query) {
             $query->where('is_active', true)->orderBy('order');
-        }, 'hints']);
+        }, 'tasks.hints' => function($query) {
+            $query->where('is_active', true)->orderBy('order');
+                }]);
         
         $user = Auth::user();
         $userProgress = [];
@@ -59,8 +126,12 @@ class ChallengeController extends Controller
             $userProgress = $challenge->getUserProgress($user);
             
             // Get user's purchased hints
+            $taskHintIds = $challenge->tasks->flatMap(function($task) {
+                return $task->hints->pluck('id');
+            });
+            
             $userHints = UserHintPurchase::where('user_id', $user->id)
-                ->whereIn('challenge_hint_id', $challenge->hints->pluck('id'))
+                ->whereIn('challenge_hint_id', $taskHintIds)
                 ->pluck('challenge_hint_id')
                 ->toArray();
         }
@@ -196,6 +267,8 @@ class ChallengeController extends Controller
             'points' => 'required|integer|min:0',
             'external_link' => 'nullable|url',
             'status' => 'required|string|in:active,inactive,draft',
+            'scheduled_at' => 'nullable|date|after:now',
+            'available_at' => 'nullable|date|after:scheduled_at',
             'tasks' => 'required|array|min:1',
             'tasks.*.title' => 'required|string|max:255',
             'tasks.*.description' => 'required|string',
@@ -225,6 +298,8 @@ class ChallengeController extends Controller
                 'points' => $validated['points'],
                 'external_link' => $validated['external_link'],
                 'status' => $validated['status'],
+                'scheduled_at' => $validated['scheduled_at'] ?? null,
+                'available_at' => $validated['available_at'] ?? null,
                 'created_by' => $validated['created_by'],
             ]);
 
@@ -321,6 +396,8 @@ class ChallengeController extends Controller
             'points' => 'required|integer|min:0',
             'external_link' => 'nullable|url',
             'status' => 'required|string|in:active,inactive,draft',
+            'scheduled_at' => 'nullable|date',
+            'available_at' => 'nullable|date|after:scheduled_at',
         ]);
 
         $challenge->update($validated);
@@ -527,5 +604,69 @@ class ChallengeController extends Controller
         ];
 
         return view('challenges.submissions', compact('challenge', 'submissions', 'stats'));
+    }
+
+    // Hints management methods
+    public function getTaskHints(ChallengeTask $task)
+    {
+        $hints = $task->hints()->orderBy('order')->get();
+        
+        return response()->json([
+            'success' => true,
+            'hints' => $hints
+        ]);
+    }
+
+    public function storeTaskHint(Request $request, ChallengeTask $task)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'nullable|string',
+            'content_type' => 'required|string|in:text,video,both',
+            'cost' => 'required|integer|min:1',
+            'order' => 'integer|min:1',
+            'is_active' => 'boolean'
+        ]);
+
+        // Set default order if not provided
+        if (!isset($validated['order'])) {
+            $maxOrder = $task->hints()->max('order') ?? 0;
+            $validated['order'] = $maxOrder + 1;
+        }
+
+        // Set default active status
+        $validated['is_active'] = $validated['is_active'] ?? true;
+
+        $hint = ChallengeHint::create([
+            'challenge_id' => $task->challenge_id,
+            'challenge_task_id' => $task->id,
+            'title' => $validated['title'],
+            'content' => $validated['content'],
+            'content_type' => $validated['content_type'],
+            'cost' => $validated['cost'],
+            'order' => $validated['order'],
+            'is_active' => $validated['is_active'],
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Hint berhasil ditambahkan',
+            'hint' => $hint
+        ]);
+    }
+
+    public function destroyHint(ChallengeHint $hint)
+    {
+        // Delete video file if exists
+        if ($hint->video_path && Storage::disk('public')->exists($hint->video_path)) {
+            Storage::disk('public')->delete($hint->video_path);
+        }
+
+        $hint->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Hint berhasil dihapus'
+        ]);
     }
 }

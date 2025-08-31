@@ -1,16 +1,16 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>Kelola Tasks - {{ $challenge->title }}</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title>Kelola Tasks - <?php echo e($challenge->title); ?></title>
     
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- Vite Assets -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen">
@@ -19,13 +19,13 @@
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <a href="{{ route('admin.challenges.index') }}" 
+                        <a href="<?php echo e(route('admin.challenges.index')); ?>" 
                            class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-4">
                             <i class="fas fa-arrow-left text-gray-600"></i>
                         </a>
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900">Kelola Tasks</h1>
-                            <p class="text-sm text-gray-600">Challenge: {{ $challenge->title }}</p>
+                            <p class="text-sm text-gray-600">Challenge: <?php echo e($challenge->title); ?></p>
                         </div>
                     </div>
                     <button onclick="openAddTaskModal()" 
@@ -51,7 +51,7 @@
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm font-medium text-gray-600">Total Tasks</p>
-                                        <p class="text-lg font-semibold text-gray-900">{{ $tasks->count() }}</p>
+                                        <p class="text-lg font-semibold text-gray-900"><?php echo e($tasks->count()); ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -63,7 +63,7 @@
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm font-medium text-gray-600">Active Tasks</p>
-                                        <p class="text-lg font-semibold text-gray-900">{{ $tasks->where('is_active', true)->count() }}</p>
+                                        <p class="text-lg font-semibold text-gray-900"><?php echo e($tasks->where('is_active', true)->count()); ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -75,7 +75,7 @@
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm font-medium text-gray-600">Total Poin</p>
-                                        <p class="text-lg font-semibold text-gray-900">{{ $tasks->sum('points') }}</p>
+                                        <p class="text-lg font-semibold text-gray-900"><?php echo e($tasks->sum('points')); ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -87,7 +87,7 @@
                                     </div>
                                     <div class="ml-3">
                                         <p class="text-sm font-medium text-gray-600">Challenge Status</p>
-                                        <p class="text-lg font-semibold text-gray-900">{{ ucfirst($challenge->status) }}</p>
+                                        <p class="text-lg font-semibold text-gray-900"><?php echo e(ucfirst($challenge->status)); ?></p>
                                     </div>
                                 </div>
                             </div>
@@ -96,51 +96,51 @@
 
                     <!-- Tasks List -->
                     <div class="p-6">
-                        @if($tasks->count() > 0)
+                        <?php if($tasks->count() > 0): ?>
                             <div class="space-y-4">
-                                @foreach($tasks as $task)
-                                    <div class="border border-gray-200 rounded-lg p-4 {{ !$task->is_active ? 'opacity-50' : '' }}"
-                                         data-task-id="{{ $task->id }}"
-                                         data-title="{{ $task->title }}"
-                                         data-description="{{ $task->description }}"
-                                         data-flag="{{ $task->flag }}"
-                                         data-points="{{ $task->points }}"
-                                         data-order="{{ $task->order }}"
-                                         data-is-active="{{ $task->is_active ? '1' : '0' }}">
+                                <?php $__currentLoopData = $tasks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $task): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <div class="border border-gray-200 rounded-lg p-4 <?php echo e(!$task->is_active ? 'opacity-50' : ''); ?>"
+                                         data-task-id="<?php echo e($task->id); ?>"
+                                         data-title="<?php echo e($task->title); ?>"
+                                         data-description="<?php echo e($task->description); ?>"
+                                         data-flag="<?php echo e($task->flag); ?>"
+                                         data-points="<?php echo e($task->points); ?>"
+                                         data-order="<?php echo e($task->order); ?>"
+                                         data-is-active="<?php echo e($task->is_active ? '1' : '0'); ?>">
                                         <div class="flex items-start justify-between">
                                             <div class="flex items-start">
-                                                <div class="w-8 h-8 {{ $task->is_active ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400' }} rounded-full flex items-center justify-center mr-3 mt-1">
-                                                    <span class="text-sm font-medium">{{ $task->order }}</span>
+                                                <div class="w-8 h-8 <?php echo e($task->is_active ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400'); ?> rounded-full flex items-center justify-center mr-3 mt-1">
+                                                    <span class="text-sm font-medium"><?php echo e($task->order); ?></span>
                                                 </div>
                                                 <div class="flex-1">
-                                                    <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ $task->title }}</h3>
-                                                    <p class="text-gray-700 mb-3">{{ $task->description }}</p>
+                                                    <h3 class="text-lg font-semibold text-gray-900 mb-2"><?php echo e($task->title); ?></h3>
+                                                    <p class="text-gray-700 mb-3"><?php echo e($task->description); ?></p>
                                                     
                                                     <div class="flex items-center gap-4 text-sm text-gray-600">
                                                         <div class="flex items-center">
                                                             <i class="fas fa-flag mr-1"></i>
-                                                            <code class="px-2 py-1 bg-gray-100 rounded text-xs">{{ $task->flag }}</code>
+                                                            <code class="px-2 py-1 bg-gray-100 rounded text-xs"><?php echo e($task->flag); ?></code>
                                                         </div>
                                                         <div class="flex items-center">
                                                             <i class="fas fa-star mr-1 text-yellow-500"></i>
-                                                            <span>{{ $task->points }} poin</span>
+                                                            <span><?php echo e($task->points); ?> poin</span>
                                                         </div>
                                                         <div class="flex items-center">
-                                                            <i class="fas fa-{{ $task->is_active ? 'check-circle text-green-500' : 'times-circle text-red-500' }} mr-1"></i>
-                                                            <span>{{ $task->is_active ? 'Active' : 'Inactive' }}</span>
+                                                            <i class="fas fa-<?php echo e($task->is_active ? 'check-circle text-green-500' : 'times-circle text-red-500'); ?> mr-1"></i>
+                                                            <span><?php echo e($task->is_active ? 'Active' : 'Inactive'); ?></span>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                             <div class="flex items-center space-x-2 ml-4">
-                                                <button data-task-id="{{ $task->id }}" onclick="editTask(this.dataset.taskId)" 
+                                                <button data-task-id="<?php echo e($task->id); ?>" onclick="editTask(this.dataset.taskId)" 
                                                         class="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors duration-200">
                                                     <i class="fas fa-edit mr-1"></i>Edit
                                                 </button>
-                                                <form action="{{ route('admin.challenges.tasks.destroy', $task) }}" method="POST" class="inline" 
+                                                <form action="<?php echo e(route('admin.challenges.tasks.destroy', $task)); ?>" method="POST" class="inline" 
                                                       onsubmit="return confirm('Yakin ingin menghapus task ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
+                                                    <?php echo csrf_field(); ?>
+                                                    <?php echo method_field('DELETE'); ?>
                                                     <button type="submit" 
                                                             class="px-3 py-1 bg-red-600 text-white text-xs rounded-lg hover:bg-red-700 transition-colors duration-200">
                                                         <i class="fas fa-trash mr-1"></i>Hapus
@@ -149,9 +149,9 @@
                                             </div>
                                         </div>
                                     </div>
-                                @endforeach
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
-                        @else
+                        <?php else: ?>
                             <!-- Empty State -->
                             <div class="text-center py-12">
                                 <div class="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -163,7 +163,7 @@
                                     <i class="fas fa-plus mr-2"></i>Tambah Task
                                 </button>
                             </div>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </main>
@@ -181,8 +181,8 @@
                     </button>
                 </div>
 
-                <form action="{{ route('admin.challenges.tasks.store', $challenge) }}" method="POST">
-                    @csrf
+                <form action="<?php echo e(route('admin.challenges.tasks.store', $challenge)); ?>" method="POST">
+                    <?php echo csrf_field(); ?>
                     
                     <!-- Title -->
                     <div class="mb-4">
@@ -230,7 +230,7 @@
                         <label for="order" class="block text-sm font-medium text-gray-700 mb-2">
                             Urutan <span class="text-red-500">*</span>
                         </label>
-                        <input type="number" id="order" name="order" min="1" value="{{ $tasks->count() + 1 }}"
+                        <input type="number" id="order" name="order" min="1" value="<?php echo e($tasks->count() + 1); ?>"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                required>
                         <p class="mt-1 text-xs text-gray-500">Task akan dikerjakan berdasarkan urutan ini</p>
@@ -271,9 +271,9 @@
                     </button>
                 </div>
 
-                <form action="{{ route('admin.challenges.tasks.update', 'TASK_ID') }}" method="POST" id="editTaskForm">
-                    @csrf
-                    @method('PUT')
+                <form action="<?php echo e(route('admin.challenges.tasks.update', 'TASK_ID')); ?>" method="POST" id="editTaskForm">
+                    <?php echo csrf_field(); ?>
+                    <?php echo method_field('PUT'); ?>
                     <input type="hidden" id="edit_task_id" name="task_id" value="">
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -475,7 +475,7 @@
 
             // Update form action URL
             const form = document.getElementById('editTaskForm');
-            const baseUrl = '{{ route("admin.challenges.tasks.update", "TASK_ID") }}';
+            const baseUrl = '<?php echo e(route("admin.challenges.tasks.update", "TASK_ID")); ?>';
             form.action = baseUrl.replace('TASK_ID', taskData.id);
 
             // Show edit modal
@@ -750,31 +750,32 @@
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
-    @if(session('success'))
+    <?php if(session('success')): ?>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 icon: 'success',
                 title: 'Berhasil!',
-                text: '{{ session("success") }}',
+                text: '<?php echo e(session("success")); ?>',
                 showConfirmButton: false,
                 timer: 3000
             });
         });
     </script>
-    @endif
+    <?php endif; ?>
 
-    @if(session('error'))
+    <?php if(session('error')): ?>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Error!',
-                text: '{{ session("error") }}',
+                text: '<?php echo e(session("error")); ?>',
                 confirmButtonText: 'OK'
             });
         });
     </script>
-    @endif
+    <?php endif; ?>
 </body>
 </html>
+<?php /**PATH C:\laragon\www\cyber-infinity-web\resources\views/admin/challenges/tasks.blade.php ENDPATH**/ ?>

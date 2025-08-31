@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<html lang="<?php echo e(str_replace('_', '-', app()->getLocale())); ?>">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title>Edit Challenge - Cyber Infinity</title>
     
     <!-- Font Awesome for Icons -->
@@ -16,7 +16,7 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <!-- Vite Assets -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <?php echo app('Illuminate\Foundation\Vite')(['resources/css/app.css', 'resources/js/app.js']); ?>
     
     <!-- Fix responsive issues -->
     <style>
@@ -64,7 +64,7 @@
                 <!-- Logo -->
                 <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                     <div class="flex items-center">
-                        <img src="{{ asset('images/fih-logo.png') }}" alt="FIH Logo" class="w-8 h-8 rounded-lg">
+                        <img src="<?php echo e(asset('images/fih-logo.png')); ?>" alt="FIH Logo" class="w-8 h-8 rounded-lg">
                         <h1 class="ml-3 text-xl font-bold text-gray-900">Cyber Infinity</h1>
                     </div>
                     <!-- Mobile Close Button -->
@@ -75,34 +75,34 @@
 
                 <!-- Navigation -->
                 <nav class="flex-1 px-4 py-4 space-y-2">
-                    <a href="{{ route('dashboard') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                    <a href="<?php echo e(route('dashboard')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-home w-5 h-5 mr-3"></i>
                         Dashboard
                     </a>
                     
-                    <a href="{{ route('workshops.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                    <a href="<?php echo e(route('workshops.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-graduation-cap w-5 h-5 mr-3"></i>
                         Workshop
                     </a>
                     
-                    <a href="{{ route('challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                    <a href="<?php echo e(route('challenges.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-flag w-5 h-5 mr-3"></i>
                         Challenges
                     </a>
                     
-                    <a href="{{ route('admin.registrations.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                    <a href="<?php echo e(route('admin.registrations.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-user-check w-5 h-5 mr-3"></i>
                         Registrasi Workshop
                     </a>
                     
-                    @if(auth()->user()->isAdmin())
-                    <a href="{{ route('admin.challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">
+                    <?php if(auth()->user()->isAdmin()): ?>
+                    <a href="<?php echo e(route('admin.challenges.index')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">
                         <i class="fas fa-cog w-5 h-5 mr-3"></i>
                         Kelola Challenges
                     </a>
-                    @endif
+                    <?php endif; ?>
                     
-                    <a href="{{ route('profile.edit') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                    <a href="<?php echo e(route('profile.edit')); ?>" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-user-cog w-5 h-5 mr-3"></i>
                         Profile
                     </a>
@@ -111,22 +111,22 @@
                 <!-- User Profile & Logout -->
                 <div class="border-t border-gray-200 p-4">
                     <div class="flex items-center mb-3">
-                        @if(auth()->user()->avatar)
-                            <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="{{ auth()->user()->name }}" 
+                        <?php if(auth()->user()->avatar): ?>
+                            <img src="<?php echo e(asset('storage/' . auth()->user()->avatar)); ?>" alt="<?php echo e(auth()->user()->name); ?>" 
                                  class="w-8 h-8 rounded-full object-cover sidebar-avatar">
-                        @else
+                        <?php else: ?>
                             <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
                                 <i class="fas fa-user text-gray-600 text-sm"></i>
                             </div>
-                        @endif
+                        <?php endif; ?>
                         <div class="ml-3">
-                            <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                            <p class="text-xs text-gray-500">{{ ucfirst(auth()->user()->role) }}</p>
-                            <p class="text-xs text-blue-600 font-medium">{{ auth()->user()->points ?? 0 }} poin</p>
+                            <p class="text-sm font-medium text-gray-900"><?php echo e(auth()->user()->name); ?></p>
+                            <p class="text-xs text-gray-500"><?php echo e(ucfirst(auth()->user()->role)); ?></p>
+                            <p class="text-xs text-blue-600 font-medium"><?php echo e(auth()->user()->points ?? 0); ?> poin</p>
                         </div>
                     </div>
-                    <form method="POST" action="{{ route('logout') }}" id="logout-form">
-                        @csrf
+                    <form method="POST" action="<?php echo e(route('logout')); ?>" id="logout-form">
+                        <?php echo csrf_field(); ?>
                         <button type="button" onclick="confirmLogout()" class="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50">
                             <i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i>
                             Logout
@@ -144,13 +144,13 @@
                     <div class="flex items-center justify-between">
                         <div>
                             <h1 class="text-2xl font-bold text-gray-900">Edit Challenge</h1>
-                            <p class="text-sm text-gray-600">Edit informasi challenge: {{ $challenge->title }}</p>
+                            <p class="text-sm text-gray-600">Edit informasi challenge: <?php echo e($challenge->title); ?></p>
                         </div>
                         <div class="flex items-center space-x-4">
-                            <a href="{{ route('admin.challenges.tasks', $challenge) }}" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                            <a href="<?php echo e(route('admin.challenges.tasks', $challenge)); ?>" class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
                                 <i class="fas fa-tasks mr-2"></i>Kelola Tasks
                             </a>
-                            <a href="{{ route('admin.challenges.index') }}" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
+                            <a href="<?php echo e(route('admin.challenges.index')); ?>" class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
                                 <i class="fas fa-arrow-left mr-2"></i>Kembali
                             </a>
                         </div>
@@ -163,21 +163,35 @@
                 <div class="max-w-2xl mx-auto">
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="p-6">
-                            <form action="{{ route('admin.challenges.update', $challenge) }}" method="POST">
-                                @csrf
-                                @method('PUT')
+                            <form action="<?php echo e(route('admin.challenges.update', $challenge)); ?>" method="POST">
+                                <?php echo csrf_field(); ?>
+                                <?php echo method_field('PUT'); ?>
                                 
                                 <!-- Title -->
                                 <div class="mb-6">
                                     <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
                                         Judul Challenge <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="text" id="title" name="title" value="{{ old('title', $challenge->title) }}" 
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('title') border-red-500 @enderror"
+                                    <input type="text" id="title" name="title" value="<?php echo e(old('title', $challenge->title)); ?>" 
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent <?php $__errorArgs = ['title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                                            placeholder="Contoh: SQL Injection 101" required>
-                                    @error('title')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    <?php $__errorArgs = ['title'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <p class="mt-1 text-sm text-red-600"><?php echo e($message); ?></p>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
 
                                 <!-- Description -->
@@ -186,20 +200,34 @@
                                         Deskripsi <span class="text-red-500">*</span>
                                     </label>
                                     <textarea id="description" name="description" rows="4" 
-                                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('description') border-red-500 @enderror"
-                                              placeholder="Belajar dasar SQL Injection dengan login bypass..." required>{{ old('description', $challenge->description) }}</textarea>
-                                    @error('description')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
+                                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent <?php $__errorArgs = ['description'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
+                                              placeholder="Belajar dasar SQL Injection dengan login bypass..." required><?php echo e(old('description', $challenge->description)); ?></textarea>
+                                    <?php $__errorArgs = ['description'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <p class="mt-1 text-sm text-red-600"><?php echo e($message); ?></p>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                 </div>
 
                                 <!-- Category and Difficulty -->
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                     <div x-data="{ 
                                         open: false, 
-                                        selected: '{{ old('category', $challenge->category) }}', 
+                                        selected: '<?php echo e(old('category', $challenge->category)); ?>', 
                                         custom: '', 
-                                        showCustom: {{ in_array(old('category', $challenge->category), $categories) ? 'false' : 'true' }},
+                                        showCustom: <?php echo e(in_array(old('category', $challenge->category), $categories) ? 'false' : 'true'); ?>,
                                         categories: ['Web', 'Crypto', 'Forensic', 'OSINT', 'Reverse', 'Pwn', 'Linux', 'Root', 'Network', 'Mobile', 'Hardware']
                                     }" 
                                     x-init="if (showCustom) custom = selected" 
@@ -213,7 +241,14 @@
                                         
                                         <!-- Dropdown Button -->
                                         <button type="button" @click="open = !open" 
-                                                class="w-full px-3 py-2 text-left border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between @error('category') border-red-500 @enderror">
+                                                class="w-full px-3 py-2 text-left border border-gray-300 rounded-lg bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 flex items-center justify-between <?php $__errorArgs = ['category'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>">
                                             <span x-text="showCustom ? custom : (selected || 'Pilih kategori...')" 
                                                   :class="{'text-gray-400': !selected && !showCustom}"></span>
                                             <svg class="w-4 h-4 text-gray-400 transition-transform" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -256,9 +291,16 @@
                                             </div>
                                         </div>
                                         
-                                        @error('category')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
+                                        <?php $__errorArgs = ['category'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                            <p class="mt-1 text-sm text-red-600"><?php echo e($message); ?></p>
+                                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                         <p class="mt-1 text-xs text-gray-500">Pilih dari kategori yang tersedia atau buat kategori custom</p>
                                     </div>
 
@@ -267,17 +309,32 @@
                                             Tingkat Kesulitan <span class="text-red-500">*</span>
                                         </label>
                                         <select id="difficulty" name="difficulty" 
-                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('difficulty') border-red-500 @enderror" required>
+                                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent <?php $__errorArgs = ['difficulty'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" required>
                                             <option value="">Pilih Kesulitan</option>
-                                            @foreach($difficulties as $difficulty)
-                                                <option value="{{ $difficulty }}" {{ old('difficulty', $challenge->difficulty) == $difficulty ? 'selected' : '' }}>
-                                                    {{ $difficulty }}
+                                            <?php $__currentLoopData = $difficulties; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $difficulty): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                                <option value="<?php echo e($difficulty); ?>" <?php echo e(old('difficulty', $challenge->difficulty) == $difficulty ? 'selected' : ''); ?>>
+                                                    <?php echo e($difficulty); ?>
+
                                                 </option>
-                                            @endforeach
+                                            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </select>
-                                        @error('difficulty')
-                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                        @enderror
+                                        <?php $__errorArgs = ['difficulty'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                            <p class="mt-1 text-sm text-red-600"><?php echo e($message); ?></p>
+                                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
                                 </div>
 
@@ -286,12 +343,26 @@
                                     <label for="points" class="block text-sm font-medium text-gray-700 mb-2">
                                         Total Poin <span class="text-red-500">*</span>
                                     </label>
-                                    <input type="number" id="points" name="points" value="{{ old('points', $challenge->points) }}" min="0"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('points') border-red-500 @enderror"
+                                    <input type="number" id="points" name="points" value="<?php echo e(old('points', $challenge->points)); ?>" min="0"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent <?php $__errorArgs = ['points'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                                            placeholder="100" required>
-                                    @error('points')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    <?php $__errorArgs = ['points'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <p class="mt-1 text-sm text-red-600"><?php echo e($message); ?></p>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     <p class="mt-1 text-xs text-gray-500">Poin total untuk challenge ini (akan dibagi ke tasks)</p>
                                 </div>
 
@@ -300,12 +371,26 @@
                                     <label for="external_link" class="block text-sm font-medium text-gray-700 mb-2">
                                         Link Eksternal <span class="text-gray-400">(Opsional)</span>
                                     </label>
-                                    <input type="url" id="external_link" name="external_link" value="{{ old('external_link', $challenge->external_link) }}"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('external_link') border-red-500 @enderror"
+                                    <input type="url" id="external_link" name="external_link" value="<?php echo e(old('external_link', $challenge->external_link)); ?>"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent <?php $__errorArgs = ['external_link'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>"
                                            placeholder="https://example.com/lab">
-                                    @error('external_link')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    <?php $__errorArgs = ['external_link'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <p class="mt-1 text-sm text-red-600"><?php echo e($message); ?></p>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     <p class="mt-1 text-xs text-gray-500">Link ke lab hands-on atau resource eksternal</p>
                                 </div>
 
@@ -315,19 +400,33 @@
                                         Status <span class="text-red-500">*</span>
                                     </label>
                                     <select id="status" name="status" 
-                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('status') border-red-500 @enderror" required>
-                                        <option value="draft" {{ old('status', $challenge->status) == 'draft' ? 'selected' : '' }}>Draft</option>
-                                        <option value="active" {{ old('status', $challenge->status) == 'active' ? 'selected' : '' }}>Active</option>
-                                        <option value="inactive" {{ old('status', $challenge->status) == 'inactive' ? 'selected' : '' }}>Inactive</option>
+                                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent <?php $__errorArgs = ['status'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" required>
+                                        <option value="draft" <?php echo e(old('status', $challenge->status) == 'draft' ? 'selected' : ''); ?>>Draft</option>
+                                        <option value="active" <?php echo e(old('status', $challenge->status) == 'active' ? 'selected' : ''); ?>>Active</option>
+                                        <option value="inactive" <?php echo e(old('status', $challenge->status) == 'inactive' ? 'selected' : ''); ?>>Inactive</option>
                                     </select>
-                                    @error('status')
-                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                    @enderror
+                                    <?php $__errorArgs = ['status'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <p class="mt-1 text-sm text-red-600"><?php echo e($message); ?></p>
+                                    <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     <p class="mt-1 text-xs text-gray-500">Draft = belum dipublish, Active = bisa diakses user, Inactive = tidak bisa diakses</p>
                                 </div>
 
                                 <!-- Scheduling -->
-                                <div class="mb-6" x-data="{ showScheduling: {{ old('scheduled_at', $challenge->scheduled_at) || old('available_at', $challenge->available_at) ? 'true' : 'false' }} }">
+                                <div class="mb-6" x-data="{ showScheduling: <?php echo e(old('scheduled_at', $challenge->scheduled_at) || old('available_at', $challenge->available_at) ? 'true' : 'false'); ?> }">
                                     <div class="flex items-center justify-between mb-4">
                                         <label class="block text-sm font-medium text-gray-700">
                                             Penjadwalan Challenge <span class="text-gray-400">(Opsional)</span>
@@ -346,11 +445,25 @@
                                                 <i class="fas fa-calendar-alt mr-1 text-blue-600"></i>Mulai Tersedia
                                             </label>
                                             <input type="datetime-local" id="scheduled_at" name="scheduled_at" 
-                                                   value="{{ old('scheduled_at', $challenge->scheduled_at ? $challenge->scheduled_at->format('Y-m-d\TH:i') : '') }}"
-                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('scheduled_at') border-red-500 @enderror">
-                                            @error('scheduled_at')
-                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                            @enderror
+                                                   value="<?php echo e(old('scheduled_at', $challenge->scheduled_at ? $challenge->scheduled_at->format('Y-m-d\TH:i') : '')); ?>"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent <?php $__errorArgs = ['scheduled_at'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>">
+                                            <?php $__errorArgs = ['scheduled_at'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                                <p class="mt-1 text-sm text-red-600"><?php echo e($message); ?></p>
+                                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                             <p class="mt-1 text-xs text-gray-600">Challenge akan terkunci sampai waktu ini</p>
                                         </div>
 
@@ -359,11 +472,25 @@
                                                 <i class="fas fa-calendar-times mr-1 text-red-600"></i>Berakhir Pada
                                             </label>
                                             <input type="datetime-local" id="available_at" name="available_at" 
-                                                   value="{{ old('available_at', $challenge->available_at ? $challenge->available_at->format('Y-m-d\TH:i') : '') }}"
-                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('available_at') border-red-500 @enderror">
-                                            @error('available_at')
-                                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                            @enderror
+                                                   value="<?php echo e(old('available_at', $challenge->available_at ? $challenge->available_at->format('Y-m-d\TH:i') : '')); ?>"
+                                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent <?php $__errorArgs = ['available_at'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> border-red-500 <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>">
+                                            <?php $__errorArgs = ['available_at'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                                <p class="mt-1 text-sm text-red-600"><?php echo e($message); ?></p>
+                                            <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                             <p class="mt-1 text-xs text-gray-600">Challenge tidak dapat diakses setelah waktu ini</p>
                                         </div>
 
@@ -389,7 +516,7 @@
 
                                 <!-- Submit Buttons -->
                                 <div class="flex items-center justify-end space-x-4 pt-6 border-t border-gray-200">
-                                    <a href="{{ route('admin.challenges.index') }}" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
+                                    <a href="<?php echo e(route('admin.challenges.index')); ?>" class="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors duration-200">
                                         Batal
                                     </a>
                                     <button type="submit" class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
@@ -405,15 +532,15 @@
                         <h3 class="text-lg font-medium text-gray-900 mb-4">Statistik Challenge</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div class="text-center">
-                                <div class="text-2xl font-bold text-blue-600">{{ $challenge->tasks->count() }}</div>
+                                <div class="text-2xl font-bold text-blue-600"><?php echo e($challenge->tasks->count()); ?></div>
                                 <div class="text-sm text-gray-500">Total Tasks</div>
                             </div>
                             <div class="text-center">
-                                <div class="text-2xl font-bold text-green-600">{{ $challenge->submissions()->where('status', 'correct')->count() }}</div>
+                                <div class="text-2xl font-bold text-green-600"><?php echo e($challenge->submissions()->where('status', 'correct')->count()); ?></div>
                                 <div class="text-sm text-gray-500">Submissions Benar</div>
                             </div>
                             <div class="text-center">
-                                <div class="text-2xl font-bold text-gray-600">{{ $challenge->submissions()->distinct('user_id')->count() }}</div>
+                                <div class="text-2xl font-bold text-gray-600"><?php echo e($challenge->submissions()->distinct('user_id')->count()); ?></div>
                                 <div class="text-sm text-gray-500">Peserta Unik</div>
                             </div>
                         </div>
@@ -515,17 +642,18 @@
         }
     </script>
     
-    @if($errors->any())
+    <?php if($errors->any()): ?>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             Swal.fire({
                 icon: 'error',
                 title: 'Validasi Error!',
-                html: '{!! implode("<br>", $errors->all()) !!}',
+                html: '<?php echo implode("<br>", $errors->all()); ?>',
                 confirmButtonText: 'OK'
             });
         });
     </script>
-    @endif
+    <?php endif; ?>
 </body>
 </html>
+<?php /**PATH C:\laragon\www\cyber-infinity-web\resources\views/admin/challenges/edit.blade.php ENDPATH**/ ?>

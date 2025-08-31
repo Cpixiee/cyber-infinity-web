@@ -128,6 +128,11 @@ Route::middleware(['auth'])->group(function () {
             Route::put('/tasks/{task}', [ChallengeController::class, 'updateTask'])->name('tasks.update');
             Route::delete('/tasks/{task}', [ChallengeController::class, 'destroyTask'])->name('tasks.destroy');
             
+            // Hints Management
+            Route::get('/tasks/{task}/hints', [ChallengeController::class, 'getTaskHints'])->name('tasks.hints');
+            Route::post('/tasks/{task}/hints', [ChallengeController::class, 'storeTaskHint'])->name('tasks.hints.store');
+            Route::delete('/hints/{hint}', [ChallengeController::class, 'destroyHint'])->name('hints.destroy');
+            
             // Submissions Management
             Route::get('/{challenge}/submissions', [ChallengeController::class, 'submissions'])->name('submissions');
         });

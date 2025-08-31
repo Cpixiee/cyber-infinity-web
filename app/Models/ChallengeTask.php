@@ -45,7 +45,7 @@ class ChallengeTask extends Model
     // Relationship with hints
     public function hints()
     {
-        return $this->hasMany(ChallengeHint::class);
+        return $this->hasMany(ChallengeHint::class, 'challenge_task_id');
     }
 
     // Check if user completed this task
