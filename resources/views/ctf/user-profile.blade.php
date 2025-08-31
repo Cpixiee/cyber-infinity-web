@@ -252,10 +252,18 @@
                     <!-- Submission History -->
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100">
                         <div class="px-6 py-4 border-b border-gray-200">
-                            <h2 class="text-lg font-semibold text-gray-900 flex items-center">
-                                <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
-                                Riwayat Submission ({{ $submissions->count() }})
-                            </h2>
+                            <div class="flex items-center justify-between">
+                                <h2 class="text-lg font-semibold text-gray-900 flex items-center">
+                                    <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                                    Riwayat Submission ({{ $submissions->count() }})
+                                </h2>
+                                @if(!$canViewFullFlags)
+                                    <div class="flex items-center text-sm text-yellow-700 bg-yellow-50 px-3 py-1 rounded-md border border-yellow-200">
+                                        <i class="fas fa-shield-alt mr-2"></i>
+                                        Flag disensor untuk privasi
+                                    </div>
+                                @endif
+                            </div>
                         </div>
 
                         @if($submissions->count() > 0)
@@ -280,7 +288,14 @@
                                                     </div>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap">
-                                                    <code class="px-2 py-1 bg-gray-100 rounded text-sm font-mono">{{ Str::limit($submission->submitted_flag, 30) }}</code>
+                                                    <div class="flex items-center">
+                                                        <code class="px-2 py-1 bg-gray-100 rounded text-sm font-mono">{{ Str::limit($submission->submitted_flag, 30) }}</code>
+                                                        @if(!$canViewFullFlags && strpos($submission->submitted_flag, '*') !== false)
+                                                            <span class="ml-2 px-2 py-1 text-xs bg-yellow-50 text-yellow-700 border border-yellow-200 rounded-md">
+                                                                <i class="fas fa-eye-slash mr-1"></i>Disensor
+                                                            </span>
+                                                        @endif
+                                                    </div>
                                                 </td>
                                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                                     @if($submission->status === 'correct')

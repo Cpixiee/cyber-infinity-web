@@ -342,6 +342,11 @@
                                                            title="Kelola Soal">
                                                             <i class="fas fa-puzzle-piece"></i>
                                                         </a>
+                                                        <a href="{{ route('admin.ctf.submissions', $ctf) }}" 
+                                                           class="text-purple-600 hover:text-purple-900 bg-purple-100 hover:bg-purple-200 px-3 py-1 rounded-lg transition-colors duration-200" 
+                                                           title="Lihat Submissions">
+                                                            <i class="fas fa-paper-plane"></i>
+                                                        </a>
                                                         <a href="{{ route('admin.ctf.edit', $ctf) }}" 
                                                            class="text-yellow-600 hover:text-yellow-900 bg-yellow-100 hover:bg-yellow-200 px-3 py-1 rounded-lg transition-colors duration-200" 
                                                            title="Edit CTF">

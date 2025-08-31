@@ -114,6 +114,30 @@
                         </div>
                     </div>
                     
+                    <!-- CTF Events Dropdown -->
+                    <div x-data="{ open: false }" class="relative">
+                        <button @click="open = !open" class="w-full flex items-center justify-between px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                            <div class="flex items-center">
+                                <i class="fas fa-trophy w-5 h-5 mr-3"></i>
+                                <span>CTF Events</span>
+                            </div>
+                            <i class="fas fa-chevron-down text-xs transition-transform" :class="{ 'rotate-180': open }"></i>
+                        </button>
+                        
+                        <div x-show="open" x-transition class="mt-1 ml-6 space-y-1">
+                            <a href="{{ route('ctf.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                                <i class="fas fa-play w-4 h-4 mr-3"></i>
+                                Lihat CTF Events
+                            </a>
+                            @if(auth()->user()->role === 'admin')
+                            <a href="{{ route('admin.ctf.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
+                                <i class="fas fa-cog w-4 h-4 mr-3"></i>
+                                Kelola CTF Events
+                            </a>
+                            @endif
+                        </div>
+                    </div>
+                    
                     @if(auth()->user()->role === 'admin')
                     <a href="{{ route('admin.registrations.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
                         <i class="fas fa-user-check w-5 h-5 mr-3"></i>

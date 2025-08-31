@@ -71,7 +71,7 @@ class ChallengeController extends Controller
     public function submitFlag(Request $request, Challenge $challenge, ChallengeTask $task)
     {
         $request->validate([
-            'flag' => 'required|string|max:255|regex:/^[a-zA-Z0-9_\-{}]+$/'
+            'flag' => 'required|string|max:255'
         ]);
         
         /** @var \App\Models\User $user */
@@ -437,5 +437,95 @@ class ChallengeController extends Controller
         return response()->download($filePath, $task->file_name, [
             'Content-Type' => 'application/octet-stream',
         ]);
+    }
+
+    // Method untuk melihat submissions challenge (admin only)
+    public function submissions(Challenge $challenge)
+    {
+        $submissions = ChallengeSubmission::with(['user', 'task'])
+            ->where('challenge_id', $challenge->id)
+            ->orderByDesc('submitted_at')
+            ->paginate(20);
+
+        // Get statistics
+        $stats = [
+            'total_submissions' => $submissions->total(),
+            'correct_submissions' => ChallengeSubmission::where('challenge_id', $challenge->id)
+                ->where('status', 'correct')
+                ->count(),
+            'unique_users' => ChallengeSubmission::where('challenge_id', $challenge->id)
+                ->distinct('user_id')
+                ->count('user_id'),
+            'users_completed' => ChallengeSubmission::where('challenge_id', $challenge->id)
+                ->where('status', 'correct')
+                ->distinct('user_id')
+                ->count('user_id')
+        ];
+
+        return view('admin.challenges.submissions', compact('challenge', 'submissions', 'stats'));
+    }
+
+    // Method untuk melihat submissions challenge (public access - hanya correct submissions)
+    public function publicSubmissions(Challenge $challenge)
+    {
+        // Check if challenge is accessible
+        if ($challenge->status !== 'active') {
+            abort(404);
+        }
+
+        // Only show correct submissions for public
+        $submissions = ChallengeSubmission::with(['user', 'task'])
+            ->where('challenge_id', $challenge->id)
+            ->where('status', 'correct')
+            ->orderByDesc('submitted_at')
+            ->paginate(20);
+
+        // Censor flags for privacy (unless user is admin or viewing own submission)
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        $submissions->getCollection()->transform(function ($submission) use ($user) {
+            $canViewFullFlag = $user && ($user->isAdmin() || $user->id === $submission->user_id);
+            
+            if (!$canViewFullFlag) {
+                $flag = $submission->submitted_flag;
+                
+                // Check if flag matches infinity{...} pattern
+                if (preg_match('/^infinity\{(.+)\}$/i', $flag, $matches)) {
+                    $flagContent = $matches[1];
+                    
+                    // Show only first 3 and last 2 characters of the content inside braces
+                    if (strlen($flagContent) > 5) {
+                        $censored = substr($flagContent, 0, 3) . str_repeat('*', max(3, strlen($flagContent) - 5)) . substr($flagContent, -2);
+                        $submission->submitted_flag = 'infinity{' . $censored . '}';
+                    } else {
+                        // If content is too short, show partial censoring
+                        $censored = substr($flagContent, 0, 1) . str_repeat('*', max(2, strlen($flagContent) - 1));
+                        $submission->submitted_flag = 'infinity{' . $censored . '}';
+                    }
+                } else {
+                    // For non-infinity flags, censor middle part
+                    if (strlen($flag) > 5) {
+                        $submission->submitted_flag = substr($flag, 0, 3) . str_repeat('*', max(3, strlen($flag) - 5)) . substr($flag, -2);
+                    } else {
+                        $submission->submitted_flag = substr($flag, 0, 1) . str_repeat('*', max(2, strlen($flag) - 1));
+                    }
+                }
+            }
+            
+            return $submission;
+        });
+
+        // Get statistics (only for correct submissions)
+        $stats = [
+            'total_submissions' => ChallengeSubmission::where('challenge_id', $challenge->id)->count(),
+            'correct_submissions' => $submissions->total(),
+            'unique_users' => ChallengeSubmission::where('challenge_id', $challenge->id)
+                ->where('status', 'correct')
+                ->distinct('user_id')
+                ->count('user_id'),
+            'total_tasks' => $challenge->tasks()->where('is_active', true)->count()
+        ];
+
+        return view('challenges.submissions', compact('challenge', 'submissions', 'stats'));
     }
 }

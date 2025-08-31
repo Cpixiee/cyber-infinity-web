@@ -223,6 +223,14 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
+                            <a href="{{ route('challenges.index') }}" 
+                               class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
+                                <i class="fas fa-arrow-left mr-2"></i>Kembali
+                            </a>
+                            <a href="{{ route('challenges.submissions', $challenge) }}" 
+                               class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                <i class="fas fa-paper-plane mr-2"></i>Submissions
+                            </a>
                             @if($challenge->external_link)
                                 <a href="{{ $challenge->external_link }}" target="_blank" 
                                    class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors duration-200">

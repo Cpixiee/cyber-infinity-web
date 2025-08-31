@@ -184,6 +184,34 @@ class CtfChallenge extends Model
             ->first()?->user;
     }
 
+    public function getSolvers($limit = null)
+    {
+        $query = $this->submissions()
+            ->where('status', 'correct')
+            ->with('user')
+            ->orderBy('submitted_at');
+            
+        if ($limit) {
+            $query->limit($limit);
+        }
+        
+        return $query->get()->map(function($submission) {
+            return [
+                'user' => $submission->user,
+                'solved_at' => $submission->submitted_at,
+                'points_earned' => $submission->points_earned
+            ];
+        });
+    }
+
+    public function getSolversCount()
+    {
+        return $this->submissions()
+            ->where('status', 'correct')
+            ->distinct('user_id')
+            ->count();
+    }
+
     public function incrementSolveCount()
     {
         $this->increment('solve_count');

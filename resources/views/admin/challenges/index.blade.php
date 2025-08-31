@@ -289,6 +289,9 @@
                                             <a href="{{ route('admin.challenges.tasks', $challenge) }}" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-purple-600 hover:bg-purple-700">
                                                 <i class="fas fa-tasks mr-1"></i>Tasks
                                             </a>
+                                            <a href="{{ route('admin.challenges.submissions', $challenge) }}" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700">
+                                                <i class="fas fa-paper-plane mr-1"></i>Submissions
+                                            </a>
                                             <a href="{{ route('admin.challenges.edit', $challenge) }}" class="inline-flex items-center px-3 py-1 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700">
                                                 <i class="fas fa-edit mr-1"></i>Edit
                                             </a>

@@ -70,19 +70,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/{workshop}/register', [RegistrationController::class, 'store'])->name('register');
     });
 
-    // Challenge Routes for All Users
-    Route::prefix('challenges')->name('challenges.')->group(function () {
-        Route::get('/', [ChallengeController::class, 'index'])->name('index');
-        Route::get('/{challenge}', [ChallengeController::class, 'show'])->name('show');
-        Route::get('/tasks/{task}/download', [ChallengeController::class, 'downloadTaskFile'])
-            ->name('task.file.download');
-        Route::post('/{challenge}/tasks/{task}/submit', [ChallengeController::class, 'submitFlag'])
-            ->name('submit')
-            ->middleware('throttle:10,1'); // 10 flag submissions per minute
-        Route::post('/hints/{hint}/purchase', [ChallengeController::class, 'purchaseHint'])
-            ->name('hint.purchase')
-            ->middleware('throttle:5,1'); // 5 hint purchases per minute
-    });
+
 
     // Notification Routes
     Route::prefix('notifications')->name('notifications.')->group(function () {
@@ -139,6 +127,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{challenge}/tasks', [ChallengeController::class, 'storeTask'])->name('tasks.store');
             Route::put('/tasks/{task}', [ChallengeController::class, 'updateTask'])->name('tasks.update');
             Route::delete('/tasks/{task}', [ChallengeController::class, 'destroyTask'])->name('tasks.destroy');
+            
+            // Submissions Management
+            Route::get('/{challenge}/submissions', [ChallengeController::class, 'submissions'])->name('submissions');
         });
 
         // CTF Management
@@ -157,6 +148,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{ctf}/challenges/{challenge}/edit', [App\Http\Controllers\CtfController::class, 'editChallenge'])->name('challenges.edit');
             Route::put('/{ctf}/challenges/{challenge}', [App\Http\Controllers\CtfController::class, 'updateChallenge'])->name('challenges.update');
             Route::delete('/{ctf}/challenges/{challenge}', [App\Http\Controllers\CtfController::class, 'destroyChallenge'])->name('challenges.destroy');
+            
+            // Submissions Management
+            Route::get('/{ctf}/submissions', [App\Http\Controllers\CtfController::class, 'submissions'])->name('submissions');
         });
     });
 
@@ -165,7 +159,8 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/', [App\Http\Controllers\CtfController::class, 'index'])->name('index');
         Route::get('/{ctf}', [App\Http\Controllers\CtfController::class, 'show'])->name('show');
         Route::get('/{ctf}/leaderboard', [App\Http\Controllers\CtfController::class, 'leaderboard'])->name('leaderboard');
-        Route::get('/{ctf}/user/{user}', [App\Http\Controllers\CtfController::class, 'userProfile'])->name('user.profile');
+        Route::get('/{ctf}/submissions', [App\Http\Controllers\CtfController::class, 'publicSubmissions'])->name('submissions');
+        Route::get('/{ctf}/user/{user}', [App\Http\Controllers\CtfController::class, 'userProfile'])->name('ctf.user.profile');
         Route::get('/challenges/{challenge}/files/{fileIndex}/download', [App\Http\Controllers\CtfController::class, 'downloadFile'])
             ->name('challenge.file.download');
         Route::post('/{ctf}/challenges/{challenge}/submit', [App\Http\Controllers\CtfController::class, 'submitFlag'])
@@ -174,5 +169,22 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/challenges/{challenge}/hints/purchase', [App\Http\Controllers\CtfController::class, 'purchaseHint'])
             ->name('hint.purchase')
             ->middleware('throttle:3,1'); // 3 CTF hint purchases per minute
+        Route::get('/challenges/{challenge}/solvers', [App\Http\Controllers\CtfController::class, 'getChallengeSolvers'])
+            ->name('challenge.solvers');
+    });
+
+    // Challenge Routes for All Users
+    Route::prefix('challenges')->name('challenges.')->group(function () {
+        Route::get('/', [ChallengeController::class, 'index'])->name('index');
+        Route::get('/{challenge}', [ChallengeController::class, 'show'])->name('show');
+        Route::get('/{challenge}/submissions', [ChallengeController::class, 'publicSubmissions'])->name('submissions');
+        Route::get('/tasks/{task}/download', [ChallengeController::class, 'downloadTaskFile'])
+            ->name('task.file.download');
+        Route::post('/{challenge}/tasks/{task}/submit', [ChallengeController::class, 'submitFlag'])
+            ->name('submit')
+            ->middleware('throttle:10,1'); // 10 flag submissions per minute
+        Route::post('/hints/{hint}/purchase', [ChallengeController::class, 'purchaseHint'])
+            ->name('hint.purchase')
+            ->middleware('throttle:5,1'); // 5 hint purchases per minute
     });
 });

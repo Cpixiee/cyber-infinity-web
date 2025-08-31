@@ -9,155 +9,38 @@
     <!-- Font Awesome for Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Alpine.js -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
-    
-    <!-- SweetAlert2 -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    
     <!-- Vite Assets -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    
-    <!-- Fix responsive issues -->
-    <style>
-        /* DESKTOP: Hide all mobile elements and show sidebar */
-        @media (min-width: 1024px) {
-            #mobile-menu-btn, 
-            #mobile-close-btn, 
-            #mobile-overlay {
-                display: none !important;
-            }
-            
-            #sidebar {
-                position: static !important;
-                transform: translateX(0) !important;
-                transition: none !important;
-            }
-        }
-        
-        /* MOBILE: Sidebar hidden by default */
-        @media (max-width: 1023px) {
-            #sidebar {
-                transform: translateX(-100%) !important;
-            }
-            
-            #sidebar.mobile-open {
-                transform: translateX(0) !important;
-            }
-        }
-    </style>
-
 </head>
-<body class="bg-white">
-    <!-- Mobile Menu Button -->
-    <button id="mobile-menu-btn" class="lg:hidden fixed top-4 left-4 z-[60] p-2 bg-white rounded-lg shadow-md border border-gray-200">
-        <i class="fas fa-bars text-gray-600"></i>
-    </button>
-
-    <!-- Mobile Overlay -->
-    <div id="mobile-overlay" class="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
-
-    <div class="flex min-h-screen bg-white">
-        <!-- Sidebar -->
-        <aside id="sidebar" class="w-64 bg-white shadow-sm border-r border-gray-200 fixed inset-y-0 left-0 z-50 transform -translate-x-full transition-transform duration-300 lg:transform-none lg:static lg:inset-0">
-            <div class="flex flex-col h-full">
-                <!-- Logo -->
-                <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+<body class="bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Simple Header with Back Button Only -->
+        <header class="bg-white shadow-sm border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between">
                     <div class="flex items-center">
-                        <img src="{{ asset('images/fih-logo.png') }}" alt="FIH Logo" class="w-8 h-8 rounded-lg">
-                        <h1 class="ml-3 text-xl font-bold text-gray-900">Cyber Infinity</h1>
+                        <a href="{{ route('admin.challenges.index') }}" 
+                           class="flex items-center justify-center w-10 h-10 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors mr-4">
+                            <i class="fas fa-arrow-left text-gray-600"></i>
+                        </a>
+                        <div>
+                            <h1 class="text-2xl font-bold text-gray-900">Kelola Tasks</h1>
+                            <p class="text-sm text-gray-600">Challenge: {{ $challenge->title }}</p>
+                        </div>
                     </div>
-                    <!-- Mobile Close Button -->
-                    <button id="mobile-close-btn" class="lg:hidden p-1 text-gray-400 hover:text-gray-600">
-                        <i class="fas fa-times text-lg"></i>
+                    <button onclick="openAddTaskModal()" 
+                            class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                        <i class="fas fa-plus mr-2"></i>Tambah Task
                     </button>
                 </div>
-
-                <!-- Navigation -->
-                <nav class="flex-1 px-4 py-4 space-y-2">
-                    <a href="{{ route('dashboard') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
-                        <i class="fas fa-home w-5 h-5 mr-3"></i>
-                        Dashboard
-                    </a>
-                    
-                    <a href="{{ route('workshops.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
-                        <i class="fas fa-graduation-cap w-5 h-5 mr-3"></i>
-                        Workshop
-                    </a>
-                    
-                    <a href="{{ route('challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
-                        <i class="fas fa-flag w-5 h-5 mr-3"></i>
-                        Challenges
-                    </a>
-                    
-                    <a href="{{ route('admin.registrations.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
-                        <i class="fas fa-user-check w-5 h-5 mr-3"></i>
-                        Registrasi Workshop
-                    </a>
-                    
-                    @if(auth()->user()->isAdmin())
-                    <a href="{{ route('admin.challenges.index') }}" class="flex items-center px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded-lg">
-                        <i class="fas fa-cog w-5 h-5 mr-3"></i>
-                        Kelola Challenges
-                    </a>
-                    @endif
-                    
-                    <a href="{{ route('profile.edit') }}" class="flex items-center px-3 py-2 text-sm font-medium text-gray-600 rounded-lg hover:bg-gray-50 hover:text-gray-900">
-                        <i class="fas fa-user-cog w-5 h-5 mr-3"></i>
-                        Profile
-                    </a>
-                </nav>
-
-                <!-- User Profile & Logout -->
-                <div class="border-t border-gray-200 p-4">
-                    <div class="flex items-center mb-3">
-                        <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                            <i class="fas fa-user text-gray-600 text-sm"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
-                            <p class="text-xs text-gray-500">{{ ucfirst(auth()->user()->role) }}</p>
-                            <p class="text-xs text-blue-600 font-medium">{{ auth()->user()->points ?? 0 }} poin</p>
-                        </div>
-                    </div>
-                    <form method="POST" action="{{ route('logout') }}" id="logout-form">
-                        @csrf
-                        <button type="button" onclick="confirmLogout()" class="w-full flex items-center px-3 py-2 text-sm font-medium text-red-600 rounded-lg hover:bg-red-50">
-                            <i class="fas fa-sign-out-alt w-5 h-5 mr-3"></i>
-                            Logout
-                        </button>
-                    </form>
-                </div>
             </div>
-        </aside>
+        </header>
 
         <!-- Main Content -->
-        <div class="flex-1 lg:ml-0">
-            <!-- Header -->
-            <header class="bg-white shadow-sm border-b border-gray-200">
-                <div class="px-6 py-4">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center">
-                            <a href="{{ route('admin.challenges.index') }}" class="mr-4 text-gray-600 hover:text-gray-900">
-                                <i class="fas fa-arrow-left"></i>
-                            </a>
-                            <div>
-                                <h1 class="text-2xl font-bold text-gray-900">Kelola Tasks</h1>
-                                <p class="text-sm text-gray-600">Challenge: {{ $challenge->title }}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center space-x-4">
-                            <button onclick="openAddTaskModal()" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
-                                <i class="fas fa-plus mr-2"></i>Tambah Task
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </header>
+        <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
             <!-- Tasks Content -->
-            <main class="flex-1 p-6 bg-white">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-100">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200">
                     <!-- Challenge Info -->
                     <div class="p-6 border-b border-gray-200">
                         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -216,7 +99,14 @@
                         @if($tasks->count() > 0)
                             <div class="space-y-4">
                                 @foreach($tasks as $task)
-                                    <div class="border border-gray-200 rounded-lg p-4 {{ !$task->is_active ? 'opacity-50' : '' }}">
+                                    <div class="border border-gray-200 rounded-lg p-4 {{ !$task->is_active ? 'opacity-50' : '' }}"
+                                         data-task-id="{{ $task->id }}"
+                                         data-title="{{ $task->title }}"
+                                         data-description="{{ $task->description }}"
+                                         data-flag="{{ $task->flag }}"
+                                         data-points="{{ $task->points }}"
+                                         data-order="{{ $task->order }}"
+                                         data-is-active="{{ $task->is_active ? '1' : '0' }}">
                                         <div class="flex items-start justify-between">
                                             <div class="flex items-start">
                                                 <div class="w-8 h-8 {{ $task->is_active ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-400' }} rounded-full flex items-center justify-center mr-3 mt-1">
@@ -362,6 +252,105 @@
         </div>
     </div>
 
+    <!-- Edit Task Modal -->
+    <div id="editTaskModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border-t-4 border-purple-500">
+            <div class="p-8">
+                <div class="flex items-center justify-between mb-8">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center">
+                            <i class="fas fa-edit text-white text-xl"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-2xl font-bold text-gray-900">Edit Task</h2>
+                            <p class="text-gray-600 text-sm">Update task information</p>
+                        </div>
+                    </div>
+                    <button onclick="closeEditTaskModal()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 p-2 rounded-lg transition-all">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <form action="{{ route('admin.challenges.tasks.update', 'TASK_ID') }}" method="POST" id="editTaskForm">
+                    @csrf
+                    @method('PUT')
+                    <input type="hidden" id="edit_task_id" name="task_id" value="">
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Title -->
+                        <div class="md:col-span-2">
+                            <label for="edit_title" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-heading text-blue-500 mr-2"></i>Task Title
+                            </label>
+                            <input type="text" name="title" id="edit_title" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                        </div>
+
+                        <!-- Description -->
+                        <div class="md:col-span-2">
+                            <label for="edit_description" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-align-left text-green-500 mr-2"></i>Description
+                            </label>
+                            <textarea name="description" id="edit_description" rows="4" required
+                                      class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"></textarea>
+                        </div>
+
+                        <!-- Flag -->
+                        <div class="md:col-span-2">
+                            <label for="edit_flag" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-flag text-red-500 mr-2"></i>Flag
+                            </label>
+                            <input type="text" name="flag" id="edit_flag" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all font-mono">
+                        </div>
+
+                        <!-- Points -->
+                        <div>
+                            <label for="edit_points" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-star text-yellow-500 mr-2"></i>Points
+                            </label>
+                            <input type="number" name="points" id="edit_points" min="0" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                        </div>
+
+                        <!-- Order -->
+                        <div>
+                            <label for="edit_order" class="block text-sm font-semibold text-gray-700 mb-2">
+                                <i class="fas fa-sort-numeric-up text-indigo-500 mr-2"></i>Order
+                            </label>
+                            <input type="number" name="order" id="edit_order" min="1" required
+                                   class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all">
+                        </div>
+
+                        <!-- Active Status -->
+                        <div class="md:col-span-2">
+                            <div class="flex items-center">
+                                <input type="checkbox" name="is_active" id="edit_is_active" value="1"
+                                       class="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 focus:ring-2">
+                                <label for="edit_is_active" class="ml-3 text-sm font-semibold text-gray-700">
+                                    <i class="fas fa-toggle-on text-green-500 mr-2"></i>Active
+                                </label>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1 ml-8">Task akan ditampilkan jika dicentang</p>
+                        </div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="flex items-center justify-end space-x-4 mt-8 pt-6 border-t border-gray-200">
+                        <button type="button" onclick="closeEditTaskModal()" 
+                                class="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors duration-200 font-medium">
+                            <i class="fas fa-times mr-2"></i>Cancel
+                        </button>
+                        <button type="submit" 
+                                class="px-6 py-3 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-lg hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-lg font-medium">
+                            <i class="fas fa-save mr-2"></i>Update Task
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         function openAddTaskModal() {
             document.getElementById('addTaskModal').classList.remove('hidden');
@@ -374,13 +363,46 @@
         }
 
         function editTask(taskId) {
-            // Implementasi edit task (bisa menggunakan modal atau redirect ke halaman edit)
-            Swal.fire({
-                title: 'Edit Task',
-                text: 'Fitur edit task akan segera tersedia',
-                icon: 'info',
-                confirmButtonText: 'OK'
-            });
+            // Find task data from the page
+            const taskElement = document.querySelector(`[data-task-id="${taskId}"]`);
+            if (!taskElement) {
+                Swal.fire('Error', 'Task tidak ditemukan', 'error');
+                return;
+            }
+
+            // Get task data from data attributes
+            const taskData = {
+                id: taskId,
+                title: taskElement.dataset.title,
+                description: taskElement.dataset.description,
+                flag: taskElement.dataset.flag,
+                points: taskElement.dataset.points,
+                order: taskElement.dataset.order,
+                isActive: taskElement.dataset.isActive === '1'
+            };
+
+            // Fill edit modal with data
+            document.getElementById('edit_task_id').value = taskData.id;
+            document.getElementById('edit_title').value = taskData.title;
+            document.getElementById('edit_description').value = taskData.description;
+            document.getElementById('edit_flag').value = taskData.flag;
+            document.getElementById('edit_points').value = taskData.points;
+            document.getElementById('edit_order').value = taskData.order;
+            document.getElementById('edit_is_active').checked = taskData.isActive;
+
+            // Update form action URL
+            const form = document.getElementById('editTaskForm');
+            const baseUrl = '{{ route("admin.challenges.tasks.update", "TASK_ID") }}';
+            form.action = baseUrl.replace('TASK_ID', taskData.id);
+
+            // Show edit modal
+            document.getElementById('editTaskModal').classList.remove('hidden');
+            document.body.classList.add('overflow-hidden');
+        }
+
+        function closeEditTaskModal() {
+            document.getElementById('editTaskModal').classList.add('hidden');
+            document.body.classList.remove('overflow-hidden');
         }
 
         function confirmLogout() {
@@ -496,6 +518,7 @@
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Escape') {
                 closeAddTaskModal();
+                closeEditTaskModal();
             }
         });
 
@@ -505,6 +528,20 @@
                 closeAddTaskModal();
             }
         });
+
+        document.getElementById('editTaskModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeEditTaskModal();
+            }
+        });
     </script>
+        </div> <!-- End tasks content div -->
+        </main>
+    </div>
+
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.1/dist/cdn.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

@@ -299,6 +299,14 @@
                             </div>
                         </div>
                         <div class="flex items-center space-x-4">
+                            <a href="{{ route('ctf.index') }}" 
+                               class="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors duration-200">
+                                <i class="fas fa-arrow-left mr-2"></i>Kembali
+                            </a>
+                            <a href="{{ route('ctf.submissions', $ctf) }}" 
+                               class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors duration-200">
+                                <i class="fas fa-paper-plane mr-2"></i>Submissions
+                            </a>
                             <a href="{{ route('ctf.leaderboard', $ctf) }}" 
                                class="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors duration-200">
                                 <i class="fas fa-trophy mr-2"></i>Leaderboard
@@ -403,7 +411,7 @@
                                                         
                                                         <p class="text-gray-600 text-sm line-clamp-2 mb-3">{{ Str::limit($challenge->description, 100) }}</p>
                                                         
-                                                        <div class="flex items-center justify-between text-xs text-gray-500">
+                                                        <div class="flex items-center justify-between text-xs text-gray-500 mb-2">
                                                             <span>
                                                                 <i class="fas fa-users mr-1"></i>
                                                                 {{ $challenge->solve_count }} solves
@@ -415,6 +423,32 @@
                                                                 </span>
                                                             @endif
                                                         </div>
+                                                        
+                                                        @if($challenge->solve_count > 0)
+                                                            @php
+                                                                $firstSolver = $challenge->getFirstSolver();
+                                                                $recentSolvers = $challenge->getSolvers(3);
+                                                            @endphp
+                                                            <div class="text-xs">
+                                                                @if($firstSolver)
+                                                                    <div class="flex items-center text-yellow-600 mb-1">
+                                                                        <i class="fas fa-crown text-xs mr-1"></i>
+                                                                        <span class="font-medium">{{ $firstSolver->username ?? $firstSolver->name }}</span>
+                                                                        <span class="text-gray-400 ml-1">(first blood)</span>
+                                                                    </div>
+                                                                @endif
+                                                                @if($recentSolvers->count() > 1)
+                                                                    <div class="text-gray-500">
+                                                                        @foreach($recentSolvers->skip(1)->take(2) as $solver)
+                                                                            <span class="mr-2">{{ $solver['user']->username ?? $solver['user']->name }}</span>
+                                                                        @endforeach
+                                                                        @if($challenge->solve_count > 3)
+                                                                            <span class="text-gray-400">+{{ $challenge->solve_count - 3 }} more</span>
+                                                                        @endif
+                                                                    </div>
+                                                                @endif
+                                                            </div>
+                                                        @endif
                                                     </div>
                                                 </div>
                                             @endforeach
@@ -449,7 +483,7 @@
                                     <div class="space-y-3">
                                         @foreach($leaderboard as $index => $user)
                                             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 cursor-pointer transition-colors duration-200"
-                                                 onclick="window.location='{{ route('ctf.user.profile', [$ctf, $user]) }}'">
+                                                 onclick="window.location='/ctf/{{ $ctf->id }}/user/{{ $user->id }}'">
                                                 <div class="flex items-center">
                                                     <div class="w-8 h-8 rounded-full flex items-center justify-center mr-3 {{ $index === 0 ? 'bg-yellow-500' : ($index === 1 ? 'bg-gray-400' : ($index === 2 ? 'bg-orange-500' : 'bg-gray-300')) }}">
                                                         @if($index < 3)
@@ -624,19 +658,133 @@
                         </div>
                     `)}
                     
-                    <div class="flex items-center justify-between text-sm text-gray-500 pt-4 border-t border-gray-200">
-                        <span><i class="fas fa-users mr-1"></i>${challenge.solve_count} solves</span>
-                        ${challenge.first_solver ? `<span>First solve: ${challenge.first_solver.name}</span>` : ''}
+                    <!-- Solvers Section -->
+                    <div class="pt-4 border-t border-gray-200">
+                        <div class="flex items-center justify-between mb-3">
+                            <h4 class="text-sm font-semibold text-gray-900 flex items-center">
+                                <i class="fas fa-users text-blue-500 mr-2"></i>
+                                Solvers (${challenge.solve_count})
+                            </h4>
+                            ${challenge.solve_count > 0 ? `
+                                <button onclick="loadSolvers(${challenge.id})" class="text-blue-600 hover:text-blue-800 text-xs font-medium">
+                                    <i class="fas fa-refresh mr-1"></i>Refresh
+                                </button>
+                            ` : ''}
+                        </div>
+                        
+                        <div id="solvers-container-${challenge.id}" class="space-y-2">
+                            ${challenge.solve_count > 0 ? `
+                                <div class="text-center py-4">
+                                    <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                                    <p class="text-sm text-gray-500 mt-2">Loading solvers...</p>
+                                </div>
+                            ` : `
+                                <div class="text-center py-4 bg-gray-50 rounded-lg">
+                                    <i class="fas fa-ghost text-gray-300 text-2xl mb-2"></i>
+                                    <p class="text-sm text-gray-500">No solvers yet</p>
+                                    <p class="text-xs text-gray-400">Be the first to solve this challenge!</p>
+                                </div>
+                            `}
+                        </div>
                     </div>
                 </div>
             `;
 
             document.getElementById('challengeModalContent').innerHTML = modalContent;
             document.getElementById('challengeModal').classList.remove('hidden');
+            
+            // Load solvers if challenge has been solved
+            if (challenge.solve_count > 0) {
+                loadSolvers(challenge.id);
+            }
         }
 
         function closeChallengeModal() {
             document.getElementById('challengeModal').classList.add('hidden');
+        }
+
+        function loadSolvers(challengeId) {
+            const container = document.getElementById(`solvers-container-${challengeId}`);
+            if (!container) return;
+
+            // Show loading state
+            container.innerHTML = `
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin text-gray-400"></i>
+                    <p class="text-sm text-gray-500 mt-2">Loading solvers...</p>
+                </div>
+            `;
+
+            fetch(`/ctf/challenges/${challengeId}/solvers`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success && data.solvers.length > 0) {
+                        let solversHtml = '';
+                        
+                        data.solvers.forEach((solver, index) => {
+                            const isFirstBlood = index === 0;
+                            const solvedTime = new Date(solver.solved_at).toLocaleString('id-ID', {
+                                day: '2-digit',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                            
+                            const profileUrl = `{{ url('/ctf/' . $ctf->id . '/user') }}/${solver.user.id}`;
+                            solversHtml += `
+                                <div class="flex items-center justify-between p-3 ${isFirstBlood ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200' : 'bg-gray-50'} rounded-lg hover:bg-gray-100 transition-colors cursor-pointer"
+                                     onclick="window.location='${profileUrl}'"
+                                     title="Lihat profil ${solver.user.name}">
+                                    <div class="flex items-center">
+                                        ${isFirstBlood ? `
+                                            <div class="w-8 h-8 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center mr-3 shadow-lg">
+                                                <i class="fas fa-crown text-white text-sm"></i>
+                                            </div>
+                                        ` : `
+                                            <div class="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center mr-3">
+                                                <span class="text-gray-600 text-sm font-bold">${index + 1}</span>
+                                            </div>
+                                        `}
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 flex items-center">
+                                                ${solver.user.username || solver.user.name}
+                                                ${isFirstBlood ? '<i class="fas fa-trophy text-yellow-500 ml-2" title="First Blood!"></i>' : ''}
+                                            </div>
+                                            <div class="text-xs text-gray-500">${solvedTime}</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="text-sm font-semibold text-green-600">+${solver.points_earned}</div>
+                                        ${isFirstBlood ? '<div class="text-xs text-yellow-600 font-medium">First Blood</div>' : ''}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        
+                        container.innerHTML = solversHtml;
+                    } else {
+                        container.innerHTML = `
+                            <div class="text-center py-4 bg-gray-50 rounded-lg">
+                                <i class="fas fa-ghost text-gray-300 text-2xl mb-2"></i>
+                                <p class="text-sm text-gray-500">No solvers yet</p>
+                                <p class="text-xs text-gray-400">Be the first to solve this challenge!</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading solvers:', error);
+                    container.innerHTML = `
+                        <div class="text-center py-4 bg-red-50 rounded-lg">
+                            <i class="fas fa-exclamation-triangle text-red-400 text-lg mb-2"></i>
+                            <p class="text-sm text-red-600">Error loading solvers</p>
+                            <button onclick="loadSolvers(${challengeId})" class="text-xs text-red-500 hover:text-red-700 mt-1">
+                                Try again
+                            </button>
+                        </div>
+                    `;
+                });
         }
 
         function submitFlag(event, challengeId) {

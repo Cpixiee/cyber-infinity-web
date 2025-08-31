@@ -220,17 +220,53 @@ class CtfController extends Controller
             ->with('challenge')
             ->orderByDesc('created_at')
             ->get();
+
+        // Check if current user is viewing their own profile or is admin
+        /** @var \App\Models\User|null $currentUser */
+        $currentUser = Auth::user();
+        $canViewFullFlags = $currentUser && ($currentUser->id === $user->id || $currentUser->isAdmin());
+
+        // Sensor flags if viewing other user's profile
+        if (!$canViewFullFlags) {
+            $submissions = $submissions->map(function ($submission) {
+                $flag = $submission->submitted_flag;
+                
+                // Check if flag matches infinity{...} pattern
+                if (preg_match('/^infinity\{(.+)\}$/i', $flag, $matches)) {
+                    $flagContent = $matches[1];
+                    
+                    // Show only first 3 and last 2 characters of the content inside braces
+                    if (strlen($flagContent) > 5) {
+                        $censored = substr($flagContent, 0, 3) . str_repeat('*', max(3, strlen($flagContent) - 5)) . substr($flagContent, -2);
+                        $submission->submitted_flag = 'infinity{' . $censored . '}';
+                    } else {
+                        // If content is too short, show partial censoring
+                        $censored = substr($flagContent, 0, 1) . str_repeat('*', max(2, strlen($flagContent) - 1));
+                        $submission->submitted_flag = 'infinity{' . $censored . '}';
+                    }
+                } else {
+                    // For non-infinity flags, censor middle part
+                    if (strlen($flag) > 5) {
+                        $submission->submitted_flag = substr($flag, 0, 3) . str_repeat('*', max(3, strlen($flag) - 5)) . substr($flag, -2);
+                    } else {
+                        $submission->submitted_flag = substr($flag, 0, 1) . str_repeat('*', max(2, strlen($flag) - 1));
+                    }
+                }
+                
+                return $submission;
+            });
+        }
             
         // Get total challenges for completion rate
         $totalChallenges = $ctf->challenges()->where('status', 'active')->count();
 
-        return view('ctf.user-profile', compact('ctf', 'user', 'userStats', 'solvedChallenges', 'submissions', 'totalChallenges'));
+        return view('ctf.user-profile', compact('ctf', 'user', 'userStats', 'solvedChallenges', 'submissions', 'totalChallenges', 'canViewFullFlags'));
     }
 
     public function submitFlag(Request $request, Ctf $ctf, CtfChallenge $challenge)
     {
         $request->validate([
-            'flag' => 'required|string|max:255|regex:/^[a-zA-Z0-9_\-{}]+$/'
+            'flag' => 'required|string|max:255'
         ]);
 
         /** @var \App\Models\User $user */
@@ -682,6 +718,140 @@ class CtfController extends Controller
         // Return file download response
         return response()->download($filePath, $file['name'], [
             'Content-Type' => $file['type'] ?? 'application/octet-stream',
+        ]);
+    }
+
+    // Method untuk melihat submissions CTF (admin only)
+    public function submissions(Ctf $ctf)
+    {
+        $submissions = CtfSubmission::with(['user', 'challenge'])
+            ->where('ctf_id', $ctf->id)
+            ->orderByDesc('submitted_at')
+            ->paginate(20);
+
+        // Get statistics
+        $stats = [
+            'total_submissions' => $submissions->total(),
+            'correct_submissions' => CtfSubmission::where('ctf_id', $ctf->id)
+                ->where('status', 'correct')
+                ->count(),
+            'unique_users' => CtfSubmission::where('ctf_id', $ctf->id)
+                ->distinct('user_id')
+                ->count('user_id'),
+            'users_completed' => CtfSubmission::where('ctf_id', $ctf->id)
+                ->where('status', 'correct')
+                ->distinct('user_id')
+                ->count('user_id')
+        ];
+
+        // Get submissions grouped by challenges
+        $submissionsByChallenge = CtfSubmission::with(['user', 'challenge'])
+            ->where('ctf_id', $ctf->id)
+            ->where('status', 'correct')
+            ->get()
+            ->groupBy('ctf_challenge_id');
+
+        return view('admin.ctf.submissions', compact('ctf', 'submissions', 'stats', 'submissionsByChallenge'));
+    }
+
+    // Method untuk melihat submissions CTF (public access - hanya correct submissions)
+    public function publicSubmissions(Ctf $ctf)
+    {
+        // Check if CTF is accessible
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        if ($ctf->status === 'draft' && (!$user || !$user->isAdmin())) {
+            abort(404);
+        }
+
+        // Only show correct submissions for public
+        $submissions = CtfSubmission::with(['user', 'challenge'])
+            ->where('ctf_id', $ctf->id)
+            ->where('status', 'correct')
+            ->orderByDesc('submitted_at')
+            ->paginate(20);
+
+        // Censor flags for privacy (unless user is admin or viewing own submission)
+        $submissions->getCollection()->transform(function ($submission) use ($user) {
+            $canViewFullFlag = $user && ($user->isAdmin() || $user->id === $submission->user_id);
+            
+            if (!$canViewFullFlag) {
+                $flag = $submission->submitted_flag;
+                
+                // Check if flag matches infinity{...} pattern
+                if (preg_match('/^infinity\{(.+)\}$/i', $flag, $matches)) {
+                    $flagContent = $matches[1];
+                    
+                    // Show only first 3 and last 2 characters of the content inside braces
+                    if (strlen($flagContent) > 5) {
+                        $censored = substr($flagContent, 0, 3) . str_repeat('*', max(3, strlen($flagContent) - 5)) . substr($flagContent, -2);
+                        $submission->submitted_flag = 'infinity{' . $censored . '}';
+                    } else {
+                        // If content is too short, show partial censoring
+                        $censored = substr($flagContent, 0, 1) . str_repeat('*', max(2, strlen($flagContent) - 1));
+                        $submission->submitted_flag = 'infinity{' . $censored . '}';
+                    }
+                } else {
+                    // For non-infinity flags, censor middle part
+                    if (strlen($flag) > 5) {
+                        $submission->submitted_flag = substr($flag, 0, 3) . str_repeat('*', max(3, strlen($flag) - 5)) . substr($flag, -2);
+                    } else {
+                        $submission->submitted_flag = substr($flag, 0, 1) . str_repeat('*', max(2, strlen($flag) - 1));
+                    }
+                }
+            }
+            
+            return $submission;
+        });
+
+        // Get statistics (only for correct submissions)
+        $stats = [
+            'total_submissions' => CtfSubmission::where('ctf_id', $ctf->id)->count(),
+            'correct_submissions' => $submissions->total(),
+            'unique_users' => CtfSubmission::where('ctf_id', $ctf->id)
+                ->where('status', 'correct')
+                ->distinct('user_id')
+                ->count('user_id'),
+            'total_challenges' => $ctf->challenges()->where('status', 'active')->count()
+        ];
+
+        // Get submissions grouped by challenges (only correct ones)
+        $submissionsByChallenge = CtfSubmission::with(['user', 'challenge'])
+            ->where('ctf_id', $ctf->id)
+            ->where('status', 'correct')
+            ->get()
+            ->groupBy('ctf_challenge_id');
+
+        return view('ctf.submissions', compact('ctf', 'submissions', 'stats', 'submissionsByChallenge'));
+    }
+
+    // API endpoint to get solvers for a specific challenge
+    public function getChallengeSolvers(CtfChallenge $challenge)
+    {
+        // Check if user is authenticated
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized'], 401);
+        }
+
+        // Check if CTF is accessible
+        $ctf = $challenge->ctf;
+        if ($ctf->status === 'draft' && !$user->isAdmin()) {
+            return response()->json(['success' => false, 'message' => 'CTF not accessible'], 404);
+        }
+
+        $solvers = $challenge->getSolvers();
+        
+        return response()->json([
+            'success' => true,
+            'solvers' => $solvers,
+            'total_solvers' => $challenge->getSolversCount(),
+            'challenge' => [
+                'id' => $challenge->id,
+                'title' => $challenge->title,
+                'points' => $challenge->points
+            ]
         ]);
     }
 }
